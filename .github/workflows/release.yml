@@ -6,6 +6,10 @@ on:
       - 'v*'
   workflow_dispatch:
 
+# Creating a GitHub release requires write access to repository contents.
+permissions:
+  contents: write
+
 jobs:
   release:
     runs-on: windows-latest
