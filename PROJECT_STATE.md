@@ -73,32 +73,33 @@ apps/revit-2024-addin (C# net48, IExternalApplication)
 9. Scripts PowerShell phải có **UTF-8 BOM** (PS 5.1 đọc sai em dash `—` nếu không BOM).
 10. `ElementId.IntegerValue` deprecated Revit 2024 → `.Value` (long); riêng `WorksetId` CHỈ có `IntegerValue`.
 
-## Việc đang làm dở / còn thiếu
+## Trạng thái hiện tại (2026-08-27, cập nhật sau E2E)
 
-- ⛔ **Chưa thể test end-to-end trong Revit** trên máy này (Revit đang đóng) → test manual theo `docs/MANUAL-TEST.md` (11 tests) bắt buộc chạy trên máy có Revit 2024 đang chạy.
-- ⛔ **Chưa cài add-in vào Revit** (`scripts/install-revit2024.ps1` chưa chạy; cần restart Revit).
-- ✅ (2026-08-27) Đã thêm **3 pipe integration tests** (framing, envelope, heartbeat, error envelope) — tổng 57 tests.
-- ✅ (2026-08-27) Đã fix **deadlock trong `PipeClient.ReadLoop`** (reader giữ `_sendGate` khi chặn đọc → `Request()` kẹt vĩnh viễn). Đây là bug chặn production.
-- ✅ (2026-08-27) Đã init **git repo** + `.github/workflows/ci.yml` (GitHub Actions).
+- ✅ **E2E 12/12 pass trong Revit 2024 thật** qua named pipe (chi tiết trong `PROGRESS.md` + `walkthrough` của conversation).
+- ✅ Add-in tự load (`LoadingPolicy=AlwaysLoad`), đã cài bản fix cuối (commit `063e249`).
+- ✅ (2026-08-27) Thêm **pipe integration tests** — tổng **59 tests pass** (net8.0 Release).
+- ✅ (2026-08-27) Fix **deadlock PipeClient.ReadLoop**, PipeServer dispose stream sớm, confirmation flow (token double-Accept, state transition), `JsonValue.String(null)` crash với `$result.*`.
+- ✅ (2026-08-27) **Audit log persistence ra file**: `%LOCALAPPDATA%\AutodeskNativeAgent\logs\audit.jsonl` (cần cài lại DLL để có hiệu lực — bản đang chạy vẫn chỉ in-memory).
+- ✅ (2026-08-27) **NuGet package** `AutodeskNativeAgent.Core 1.0.0` (net48+net8.0) + `RELEASE-NOTES.md` + tag **v1.0.0** (commit `03aff95`).
+- ✅ Git repo + `.github/workflows/ci.yml` + `release.yml` (chưa có remote GitHub → CI chưa chạy thật).
 
 ## Compile/build errors hiện tại
 
-- **Không có.** Toàn solution build 0 error / 0 warning (Release, --no-incremental) tại thời điểm state này.
-- `dotnet test` **57/57 pass** (54 unit + 3 pipe integration).
+- **Không có.** Toàn solution build 0 error / 0 warning (Release, --no-incremental).
+- `dotnet test` **59/59 pass** (unit + pipe integration).
 
-## Các phần còn thiếu
+## Các phần còn thiếu (cần GitHub / decision)
 
-- Cài đặt & xác minh thực tế trong Revit (blocker: cần Revit 2024 mở).
-- Audit logs output thực tế kiểm tra sau khi chạy add-in.
+- Push repo lên GitHub → branch protection + CI tự động.
+- Publish `artifacts\nupkg\AutodeskNativeAgent.Core.1.0.0.nupkg` lên GitHub Packages / feed private.
+- TIER 5 (feature extensions): Revit 2025, AutoCAD, undo/redo ops, streaming results, advanced search.
 
 ## Bước tiếp theo chính xác
 
-1. (Người dùng) Mở Revit 2024, tạo project.
-2. Chạy `.\scripts\install-revit2024.ps1 -Configuration Release` (cài add-in + .addin + Core DLL).
-3. Restart Revit → add-in tự nạp (pipe `autodesk-native-agent-<user>`).
-4. Chạy `.\scripts\verify-installation.ps1`.
-5. Chạy `.\scripts\start-mcp.ps1` (hoặc connect MCP client trực tiếp tới `node dist/index.js`).
-6. Test theo `docs/MANUAL-TEST.md` TEST 1→11.
+1. (Tuỳ chọn) Muốn bản có audit-log-file chạy trong Revit: **đóng Revit** → `.\scripts\install-revit2024.ps1 -Configuration Release` → mở lại Revit 2024 (add-in tự nạp).
+2. Push repo lên GitHub (gắn remote cho repo hiện có) → bật branch protection; CI/Release workflows sẵn có trong `.github/workflows/`.
+3. (Tuỳ chọn) `dotnet nuget push artifacts\nupkg\*.nupkg --source <feed>` để publish package.
+4. `docs\MANUAL-TEST.md` TEST 1→11 đã được chạy tự động qua E2E runner (12/12) — không cần chạy lại nếu không thay đổi code.
 
 ## Lệnh build/test cần chạy
 
@@ -120,7 +121,7 @@ dotnet test "tests\unit\AutodeskNativeAgent.Core.Tests\AutodeskNativeAgent.Core.
 
 ## Known limitations
 
-- Add-in chỉ hỗ trợ **1 client pipe** tại một thời điểm (NamedPipeServerStream max 1).
+- Add-in hỗ trợ **tối đa 4 client pipe** đồng thời (NamedPipeServerStream max 4); mỗi client 1 thread.
 - MCP server timeout request 30s; plan commit chạy async (job queue) — status qua `revit_get_job_status`.
 - Preview không hỗ trợ `element.move/rotate` mang tính thực thi (resolution only).
 - `element.delete` yêu cầu `requireUserConfirmation` (rollbackOnValidationFailure).
