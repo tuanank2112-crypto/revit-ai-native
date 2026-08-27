@@ -43,6 +43,7 @@ namespace AutodeskNativeAgent.Core.Tests
             ["revit_validate_plan"] = "plan.validate",
             ["revit_preview_plan"] = "plan.preview",
             ["revit_commit_plan"] = "plan.commit",
+            ["revit_confirm_plan"] = "plan.confirm",
             ["revit_get_job_status"] = "job.status",
             ["revit_cancel_job"] = "job.cancel",
             ["revit_rollback_job"] = "job.rollback",

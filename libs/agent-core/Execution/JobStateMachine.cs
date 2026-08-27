@@ -160,6 +160,11 @@ namespace AutodeskNativeAgent.Core.Execution
                     ["submittedAtUtc"] = JsonValue.String(SubmittedAtUtc.ToString("yyyy-MM-dd'T'HH:mm:ss.fff'Z'"))
                 };
 
+                if (_status == JobStatus.AwaitingConfirmation && !string.IsNullOrEmpty(_confirmationToken))
+                {
+                    members["confirmationToken"] = JsonValue.String(_confirmationToken);
+                }
+
                 if (_result != null)
                 {
                     members["result"] = _result.ToJson();

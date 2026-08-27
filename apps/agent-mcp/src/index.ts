@@ -85,6 +85,19 @@ const tools = [
     inputSchema: { type: 'object', required: ['plan'], properties: { plan: { type: 'object', description: 'The agent plan to commit' } } }
   },
   {
+    name: 'revit_confirm_plan',
+    description: 'Accepts or rejects a pending plan confirmation. Call job.status first to obtain the confirmationToken, then accept to run the plan or reject to cancel it.',
+    inputSchema: {
+      type: 'object',
+      required: ['jobId', 'action'],
+      properties: {
+        jobId: { type: 'string' },
+        action: { type: 'string', enum: ['accept', 'reject'], description: "'accept' to run the plan, 'reject' to cancel" },
+        token: { type: 'string', description: 'The confirmationToken from job.status' }
+      }
+    }
+  },
+  {
     name: 'revit_get_job_status',
     description: 'Returns the current job status and latest execution result.',
     inputSchema: { type: 'object', required: ['jobId'], properties: { jobId: { type: 'string' } } }
@@ -166,6 +179,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       case 'revit_commit_plan':
         method = 'plan.commit';
         payload = args.plan;
+        break;
+      case 'revit_confirm_plan':
+        method = 'plan.confirm';
+        payload = { jobId: args.jobId, action: args.action, token: args.token };
         break;
       case 'revit_get_job_status':
         method = 'job.status';
