@@ -73,33 +73,30 @@ apps/revit-2024-addin (C# net48, IExternalApplication)
 9. Scripts PowerShell phải có **UTF-8 BOM** (PS 5.1 đọc sai em dash `—` nếu không BOM).
 10. `ElementId.IntegerValue` deprecated Revit 2024 → `.Value` (long); riêng `WorksetId` CHỈ có `IntegerValue`.
 
-## Trạng thái hiện tại (2026-08-27, cập nhật sau E2E)
+## Trạng thái hiện tại (2026-08-28, sau phase 2 — 8 op mới Tier-1)
 
-- ✅ **E2E 12/12 pass trong Revit 2024 thật** qua named pipe (chi tiết trong `PROGRESS.md` + `walkthrough` của conversation).
-- ✅ Add-in tự load (`LoadingPolicy=AlwaysLoad`), đã cài bản fix cuối (commit `063e249`).
-- ✅ (2026-08-27) Thêm **pipe integration tests** — tổng **59 tests pass** (net8.0 Release).
-- ✅ (2026-08-27) Fix **deadlock PipeClient.ReadLoop**, PipeServer dispose stream sớm, confirmation flow (token double-Accept, state transition), `JsonValue.String(null)` crash với `$result.*`.
-- ✅ (2026-08-27) **Audit log persistence ra file**: `%LOCALAPPDATA%\AutodeskNativeAgent\logs\audit.jsonl` (cần cài lại DLL để có hiệu lực — bản đang chạy vẫn chỉ in-memory).
-- ✅ (2026-08-27) **NuGet package** `AutodeskNativeAgent.Core 1.0.0` (net48+net8.0) + `RELEASE-NOTES.md` + tag **v1.0.0** (commit `03aff95`).
-- ✅ Git repo + `.github/workflows/ci.yml` + `release.yml` (chưa có remote GitHub → CI chưa chạy thật).
-
-## Compile/build errors hiện tại
-
-- **Không có.** Toàn solution build 0 error / 0 warning (Release, --no-incremental).
-- `dotnet test` **59/59 pass** (unit + pipe integration).
-
-## Các phần còn thiếu (cần GitHub / decision)
-
-- Push repo lên GitHub → branch protection + CI tự động.
-- Publish `artifacts\nupkg\AutodeskNativeAgent.Core.1.0.0.nupkg` lên GitHub Packages / feed private.
-- TIER 5 (feature extensions): Revit 2025, AutoCAD, undo/redo ops, streaming results, advanced search.
+- ✅ **Build solution 0 error / 0 warning** (Release). **59/59 tests pass**. MCP `npm run build` OK.
+- ✅ **8 op mới Tier-1 đã implement + register + dispatch (tổng 28 ops)**:
+  - `family.load` (Document.LoadFamilySymbol — `LoadFamily(String,…)` ABSENT)
+  - `family.instance.create` (3-arg `NewFamilyInstance`; `StructuralType` chỉ có NonStructural/Column/Beam)
+  - `column.create` (wrapper family.instance, category OST_Columns)
+  - `beam.create` (8-arg `Wall.Create` structural — `Wall.Width` READ-ONLY)
+  - `slab.create` (`Ceiling.Create`; `CurveLoop` = `new`+`Append`, KHÔNG có 1-arg ctor)
+  - `roof.create` (`NewFootPrintRoof(..., out ModelCurveArray)`; `CurveArray`/`ModelCurveArray` = `new`+`Append`)
+  - `view.create_section` (`ViewSection.CreateSection`; `BoundingBoxXYZ` chỉ Min/Max)
+  - `view.create_elevation` (reuse section op, ViewFamily.Elevation)
+- ✅ **Docs phase 1**: `docs/REVIT-2024-API-CATALOG.md` + `docs/FEATURE-ROADMAP.md` (Tier 0/1/2/3, verified).
+- ⚠️ **Sửa sai audit cũ**: audit session trước chỉ quét namespace 1-level `Autodesk.Revit.DB.*` → **nhầm** các type trong `Architecture` (Stairs/StairsRun/StairsLanding/Railing/Room) và `Structure` (Truss) là "thiếu". Các type đó **CÓ** (verified). Riêng `Stairs.Create` **thật sự ABSENT** → cầu thang native bị chặn, fallback = family instance.
+- ⚠️ **Add-in đang chạy trong Revit vẫn là v1.0.0 cũ (20 ops)** — bản 28 ops CHƯA install.
+- E2E 12/12 (session trước, 20 ops) vẫn hợp lệ; 8 op mới **chưa E2E**.
 
 ## Bước tiếp theo chính xác
 
-1. (Tuỳ chọn) Muốn bản có audit-log-file chạy trong Revit: **đóng Revit** → `.\scripts\install-revit2024.ps1 -Configuration Release` → mở lại Revit 2024 (add-in tự nạp).
-2. Push repo lên GitHub (gắn remote cho repo hiện có) → bật branch protection; CI/Release workflows sẵn có trong `.github/workflows/`.
-3. (Tuỳ chọn) `dotnet nuget push artifacts\nupkg\*.nupkg --source <feed>` để publish package.
-4. `docs\MANUAL-TEST.md` TEST 1→11 đã được chạy tự động qua E2E runner (12/12) — không cần chạy lại nếu không thay đổi code.
+1. **Install bản mới**: `.\scripts\install-revit2024.ps1 -Configuration Release`.
+2. **Restart Revit 2024 1 lần** (bắt buộc — add-in load DLL lúc start).
+3. **E2E 8 op mới** qua named pipe: validate → preview → commit → confirm → job.status → assert (tạo 1 level, 1 grid, 1 cột, 1 dầm, 1 slab, 1 roof, 1 section, 1 elevation; rồi `element.delete` dọn probe).
+4. **Phase 4**: build nhà 2 tầng đúng kích thước (theo thứ tự trong `docs/FEATURE-ROADMAP.md`).
+5. (Tuỳ chọn) Push repo lên GitHub → CI/Release.
 
 ## Lệnh build/test cần chạy
 
@@ -119,11 +116,14 @@ dotnet test "tests\unit\AutodeskNativeAgent.Core.Tests\AutodeskNativeAgent.Core.
 .\scripts\package-release.ps1 -Version 1.0.0
 ```
 
-## Known limitations
+## Known limitations (cập nhật 2026-08-28)
 
-- Add-in hỗ trợ **tối đa 4 client pipe** đồng thời (NamedPipeServerStream max 4); mỗi client 1 thread.
-- MCP server timeout request 30s; plan commit chạy async (job queue) — status qua `revit_get_job_status`.
-- Preview không hỗ trợ `element.move/rotate` mang tính thực thi (resolution only).
-- `element.delete` yêu cầu `requireUserConfirmation` (rollbackOnValidationFailure).
-- export.pdf dùng `Document.Export(folder, views, options)` — ghi đè file cùng tên theo giây (không có baseName).
-- Source hiện KHÔNG có strategy `"selection"` cho element reference — dùng uniqueId/elementId/viaOperationResult.
+- Add-in hỗ trợ **tối đa 4 client pipe** đồng thời; mỗi client 1 thread.
+- MCP server timeout request 30s; plan commit chạy async (job queue).
+- `element.delete` yêu cầu `requireUserConfirmation`.
+- `Wall.Width` + `WallType.Width` **READ-ONLY** — đổi bề dày phải qua WallType.
+- `Stairs.Create` **ABSENT** — cầu thang native không tạo được parent → fallback family instance.
+- `ReferencePlane.Create` ABSENT → `NewExtrusionRoof` không dùng được (mái chỉ footprint).
+- `CurveLoop` không có 1-arg ctor; `CurveArray`/`ModelCurveArray` phải `new`+`Append`.
+- `StructuralType` chỉ 3 giá trị (NonStructural/Column/Beam); `OST_Beams` ABSENT.
+- Source KHÔNG có strategy `"selection"` cho element reference.
