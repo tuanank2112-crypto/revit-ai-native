@@ -19,6 +19,10 @@ namespace AutodeskNativeAgent.Revit2024.Execution
         public static Resolution<FamilySymbol> Resolve(Document document, JsonValue selector, string categoryKey, ProjectPolicy policy, ExternalUnit units)
         {
             string strategy = selector["strategy"].AsString(null);
+            if (string.IsNullOrEmpty(strategy))
+            {
+                strategy = "project_default_or_fail";
+            }
             switch (strategy)
             {
                 case "explicit_unique_id":
@@ -488,6 +492,7 @@ namespace AutodeskNativeAgent.Revit2024.Execution
                 case "wall": return BuiltInCategory.OST_Walls;
                 case "door": return BuiltInCategory.OST_Doors;
                 case "window": return BuiltInCategory.OST_Windows;
+                case "column": return BuiltInCategory.OST_Columns;
                 default: return BuiltInCategory.OST_GenericModel;
             }
         }

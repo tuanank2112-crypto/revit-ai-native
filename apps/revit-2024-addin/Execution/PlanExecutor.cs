@@ -378,6 +378,45 @@ namespace AutodeskNativeAgent.Revit2024.Execution
                 case "export.pdf":
                     return ExportPdfOperation.Execute(document, operation, plan, results);
 
+                case "family.instance.create":
+                    return FamilyInstanceCreateOperation.Execute(document, operation, plan, results, ProjectPolicy.FromJson(JsonValue.EmptyObject()));
+
+                case "column.create":
+                    return ColumnCreateOperation.Execute(document, operation, plan, results, ProjectPolicy.FromJson(JsonValue.EmptyObject()));
+
+                case "beam.create":
+                    return BeamCreateOperation.Execute(document, operation, plan, results, ProjectPolicy.FromJson(JsonValue.EmptyObject()));
+
+                case "slab.create":
+                    return SlabCreateOperation.Execute(document, operation, plan, results);
+
+                case "roof.create":
+                    return RoofCreateOperation.Execute(document, operation, plan, results);
+
+                case "view.create_section":
+                    return ViewCreateSectionOperation.Execute(document, operation, plan, results);
+
+                case "view.create_elevation":
+                {
+                    // Elevation = section op with a vertically oriented box; force viewType.
+                    var members = new Dictionary<string, JsonValue>(StringComparer.Ordinal);
+                    foreach (var kvp in operation.Args.Members)
+                    {
+                        members[kvp.Key] = kvp.Value;
+                    }
+
+                    members["viewType"] = JsonValue.String("elevation");
+                    var synthetic = new PlanOperation(operation.Id, "view.create_section", JsonValue.Object(members), operation.DependsOn);
+                    var result = ViewCreateSectionOperation.Execute(document, synthetic, plan, results);
+                    return new OperationResult(
+                        operation.Id,
+                        "view.create_elevation",
+                        OperationOutcome.Completed,
+                        created: result.CreatedElements,
+                        resolved: result.Resolved,
+                        warnings: result.Warnings);
+                }
+
                 default:
                     throw new AgentException(ErrorCodes.UnknownOperation,
                         "No handler registered for operation '" + operation.Op + "'.", true);
