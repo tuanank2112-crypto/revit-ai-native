@@ -324,30 +324,39 @@ namespace AutodeskNativeAgent.Revit2024.Execution
                             return;
                         }
 
-                        // Validate the token carried on the job (set by HandleConfirm or by the
-                        // agent echoing the preview token). If the job has no token, fail.
-                        string tokenValue = job.ConfirmationToken;
-                        if (string.IsNullOrEmpty(tokenValue))
+                        // Validate the token carried on the job. Two paths reach here:
+                        //  (a) resume after HandleConfirm already called token.Accept() —
+                        //      state is Accepted, so validation is done; proceed to commit.
+                        //  (b) first run where the agent echoed a token value — validate it.
+                        if (token.State == ConfirmationState.Accepted)
                         {
-                            job.Complete(new ExecutionResult(
-                                job.JobId, JobStatus.AwaitingConfirmation, string.Empty, job.PlanHash,
-                                DateTime.UtcNow, DateTime.UtcNow, true, null, null, null,
-                                new[] { new AgentError(ErrorCodes.ConfirmationRequired,
-                                    "This plan requires confirmation. Accept the pending confirmation or provide the token.", true) }));
-                            return;
+                            // Already approved via plan.confirm; nothing left to validate.
                         }
-
-                        AgentError tokenError = token.Validate(tokenValue);
-                        if (tokenError != null)
+                        else
                         {
-                            job.Complete(new ExecutionResult(
-                                job.JobId, JobStatus.Failed, string.Empty, job.PlanHash,
-                                DateTime.UtcNow, DateTime.UtcNow, true, null, null, null,
-                                new[] { tokenError }));
-                            return;
-                        }
+                            string tokenValue = job.ConfirmationToken;
+                            if (string.IsNullOrEmpty(tokenValue))
+                            {
+                                job.Complete(new ExecutionResult(
+                                    job.JobId, JobStatus.AwaitingConfirmation, string.Empty, job.PlanHash,
+                                    DateTime.UtcNow, DateTime.UtcNow, true, null, null, null,
+                                    new[] { new AgentError(ErrorCodes.ConfirmationRequired,
+                                        "This plan requires confirmation. Accept the pending confirmation or provide the token.", true) }));
+                                return;
+                            }
 
-                        token.Accept();
+                            AgentError tokenError = token.Validate(tokenValue);
+                            if (tokenError != null)
+                            {
+                                job.Complete(new ExecutionResult(
+                                    job.JobId, JobStatus.Failed, string.Empty, job.PlanHash,
+                                    DateTime.UtcNow, DateTime.UtcNow, true, null, null, null,
+                                    new[] { tokenError }));
+                                return;
+                            }
+
+                            token.Accept();
+                        }
                     }
 
                     ExecutionResult result = executor.Commit(doc, job.Plan, _registry);
