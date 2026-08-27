@@ -1,4 +1,4 @@
-﻿name: Release
+name: Release
 
 on:
   push:
@@ -20,7 +20,7 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '20'
+        node-version: '24'
 
     - name: Build Core (net48 + net8.0)
       run: dotnet build libs/agent-core/AutodeskNativeAgent.Core.csproj -c Release
@@ -51,6 +51,10 @@ jobs:
         Copy-Item "apps\agent-mcp\dist" "$stage\dist" -Recurse
         Copy-Item "apps\agent-mcp\package.json" $stage
         Copy-Item "apps\agent-mcp\tsconfig.json" $stage
+
+        # Pack the Core library NuGet package
+        dotnet pack "libs\agent-core\AutodeskNativeAgent.Core.csproj" -c Release -o "$env:RUNNER_TEMP\nupkg"
+        Copy-Item "$env:RUNNER_TEMP\nupkg\*.nupkg" $stage
 
         # Scripts
         Copy-Item "scripts\*.ps1" $stage

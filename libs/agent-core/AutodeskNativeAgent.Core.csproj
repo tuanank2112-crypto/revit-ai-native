@@ -21,6 +21,12 @@
     <RepositoryType>git</RepositoryType>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+
+    <!-- The Core library references NO Revit API types (only the add-in does),
+         so the repository-level ValidateRevitApi target must be disabled here.
+         Without this, CI runners without a Revit 2024 install cannot build
+         Core or the test project that depends on it. -->
+    <EnableRevitApiValidation>false</EnableRevitApiValidation>
   </PropertyGroup>
 
   <ItemGroup>

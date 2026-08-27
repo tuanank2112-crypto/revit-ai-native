@@ -1,4 +1,4 @@
-﻿name: CI
+name: CI
 
 on:
   push:
@@ -20,7 +20,7 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '20'
+        node-version: '24'
 
     # The add-in project requires RevitAPI.dll which is NOT available on CI runners.
     # Build the shared core (net48 + net8.0) and the test project instead; the add-in
