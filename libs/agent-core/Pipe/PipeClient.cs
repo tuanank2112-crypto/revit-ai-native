@@ -238,9 +238,14 @@ namespace AutodeskNativeAgent.Core.Pipe
         {
             while (!_cts.IsCancellationRequested)
             {
+                JsonValue frame;
                 try
                 {
-                    JsonValue frame;
+                    // Snapshot the stream without holding the send gate. Reads and
+                    // writes on a full-duplex NamedPipeClientStream are independent;
+                    // holding _sendGate during a blocking read would deadlock
+                    // Request()/HeartbeatLoop(), which need the same gate to write.
+                    NamedPipeClientStream stream;
                     lock (_sendGate)
                     {
                         if (_stream == null || !_stream.IsConnected)
@@ -248,26 +253,10 @@ namespace AutodeskNativeAgent.Core.Pipe
                             break;
                         }
 
-                        frame = ReadFrame(_stream);
+                        stream = _stream;
                     }
 
-                    if (frame == null)
-                    {
-                        break;
-                    }
-
-                    string requestId = frame["requestId"].AsString(null);
-                    if (string.IsNullOrEmpty(requestId))
-                    {
-                        continue;
-                    }
-
-                    // Heartbeat responses and notifications do not have a pending request.
-                    TaskCompletionSource<JsonValue> tcs;
-                    if (_pending.TryRemove(requestId, out tcs))
-                    {
-                        tcs.SetResult(frame);
-                    }
+                    frame = ReadFrame(stream);
                 }
                 catch (OperationCanceledException)
                 {
@@ -275,9 +264,27 @@ namespace AutodeskNativeAgent.Core.Pipe
                 }
                 catch (Exception)
                 {
-                    // A transient read error should not crash the reader; the next Request
-                    // call will surface a REVIT_NOT_CONNECTED error to the caller.
+                    // Disconnect() disposes the stream mid-read (ObjectDisposedException)
+                    // or the peer closed the connection. Treat both as end-of-connection.
                     break;
+                }
+
+                if (frame == null)
+                {
+                    break;
+                }
+
+                string requestId = frame["requestId"].AsString(null);
+                if (string.IsNullOrEmpty(requestId))
+                {
+                    continue;
+                }
+
+                // Heartbeat responses and notifications do not have a pending request.
+                TaskCompletionSource<JsonValue> tcs;
+                if (_pending.TryRemove(requestId, out tcs))
+                {
+                    tcs.SetResult(frame);
                 }
             }
 
