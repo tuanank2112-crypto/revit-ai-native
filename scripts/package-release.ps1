@@ -1,4 +1,4 @@
-# package-release.ps1 — Packages a release zip for distribution
+﻿# package-release.ps1 — Packages a release zip for distribution
 [CmdletBinding()]
 param(
   [string]$Version = "1.0.0",

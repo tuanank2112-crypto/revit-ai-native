@@ -1,4 +1,4 @@
-# install-revit2024.ps1 — Installs the Revit 2024 add-in to the user's Addins folder
+﻿# install-revit2024.ps1 - Installs the Revit 2024 add-in to the user's Addins folder
 [CmdletBinding()]
 param(
   [string]$Configuration = "Release"
@@ -42,7 +42,7 @@ if (Test-Path $dllSource) {
   Write-Host "  Assembly: $dllTarget"
   Copy-Item $dllSource $dllTarget -Force
 } else {
-  Write-Warning "Assembly not found at $dllSource — did you build first?"
+  Write-Warning "Assembly not found at $dllSource - did you build first?"
 }
 
 # Copy the core library
