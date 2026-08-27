@@ -1,7 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using AutodeskNativeAgent.Core.Contracts;
 using Xunit;
 
 namespace AutodeskNativeAgent.Core.Tests
@@ -13,7 +14,23 @@ namespace AutodeskNativeAgent.Core.Tests
     /// </summary>
     public class EnvelopeContractTests
     {
-        private const string McpSourcePath = @"..\..\..\..\..\apps\agent-mcp\src\index.ts";
+        private static string ResolveMcpSourcePath()
+        {
+            // Test assembly lives under <repo>/tests/unit/AutodeskNativeAgent.Core.Tests/bin/<cfg>/net8.0/.
+            // Walk up until we find the repo marker (AutodeskNativeAgent.sln).
+            DirectoryInfo dir = new DirectoryInfo(AppContext.BaseDirectory);
+            while (dir != null && !File.Exists(Path.Combine(dir.FullName, "AutodeskNativeAgent.sln")))
+            {
+                dir = dir.Parent;
+            }
+
+            if (dir == null)
+            {
+                return null;
+            }
+
+            return Path.Combine(dir.FullName, "apps", "agent-mcp", "src", "index.ts");
+        }
 
         // MCP tool name -> pipe method it must invoke, from index.ts switch.
         private static readonly Dictionary<string, string> ExpectedMappings = new()
@@ -35,9 +52,12 @@ namespace AutodeskNativeAgent.Core.Tests
         [Fact]
         public void Mcp_tool_to_method_mapping_matches_index_ts()
         {
-            Skip.If(!File.Exists(McpSourcePath), "MCP source not found; run from repo root.");
+            string mcpSourcePath = ResolveMcpSourcePath();
+            Assert.True(
+                mcpSourcePath != null && File.Exists(mcpSourcePath),
+                "MCP source (index.ts) not found; test must run within the repo.");
 
-            string source = File.ReadAllText(McpSourcePath);
+            string source = File.ReadAllText(mcpSourcePath);
 
             foreach (var pair in ExpectedMappings)
             {
