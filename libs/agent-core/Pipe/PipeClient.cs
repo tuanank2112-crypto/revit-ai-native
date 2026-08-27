@@ -101,6 +101,15 @@ namespace AutodeskNativeAgent.Core.Pipe
         /// <summary>True when the client believes it is connected.</summary>
         public bool IsConnected => _stream != null && _stream.IsConnected;
 
+        /// <summary>
+        /// Raised once when the underlying pipe is lost (peer closed, add-in unloaded,
+        /// or the stream faulted). Hosts use this to surface a health status and trigger
+        /// reconnection. Fires at most once per connection loss.
+        /// </summary>
+        public event EventHandler ConnectionLost;
+
+        private volatile bool _lossReported;
+
         /// <summary>Creates a client for the given pipe name.</summary>
         public PipeClient(
             string pipeName,
@@ -297,6 +306,29 @@ namespace AutodeskNativeAgent.Core.Pipe
             }
 
             _pending.Clear();
+            RaiseConnectionLostOnce();
+        }
+
+        private void RaiseConnectionLostOnce()
+        {
+            if (_lossReported)
+            {
+                return;
+            }
+
+            _lossReported = true;
+            EventHandler handler = ConnectionLost;
+            if (handler != null)
+            {
+                try
+                {
+                    handler(this, EventArgs.Empty);
+                }
+                catch (Exception)
+                {
+                    // Host callbacks must never tear down the reader thread.
+                }
+            }
         }
 
         private void HeartbeatLoop()

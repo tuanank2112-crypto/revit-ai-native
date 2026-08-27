@@ -9,10 +9,10 @@ using AutodeskNativeAgent.Core.Contracts;
 namespace AutodeskNativeAgent.Revit2024.Pipe
 {
     /// <summary>
-    /// A length-prefixed named-pipe server that accepts one client at a time. Frames are
-    /// <c>[4-byte little-endian length][UTF-8 JSON]</c>, capped at
-    /// <see cref="PipeProtocol.MaxMessageBytes"/> bytes. The server is single-client by
-    /// design: the MCP server is its only peer.
+    /// A length-prefixed named-pipe server that accepts up to four concurrent clients.
+    /// Frames are <c>[4-byte little-endian length][UTF-8 JSON]</c>, capped at
+    /// <see cref="PipeProtocol.MaxMessageBytes"/> bytes. Each accepted client is serviced
+    /// on its own background thread so a slow client cannot block the accept loop.
     /// </summary>
     /// <remarks>
     /// All public members are safe to call from the Revit main thread; the listener runs on a
@@ -80,7 +80,7 @@ namespace AutodeskNativeAgent.Revit2024.Pipe
             {
                 try
                 {
-                    using (var pipe = new NamedPipeServerStream(_pipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous))
+                    using (var pipe = new NamedPipeServerStream(_pipeName, PipeDirection.InOut, 4, PipeTransmissionMode.Byte, PipeOptions.Asynchronous))
                     {
                         pipe.WaitForConnection();
                         if (_cts.IsCancellationRequested)
@@ -88,7 +88,14 @@ namespace AutodeskNativeAgent.Revit2024.Pipe
                             break;
                         }
 
-                        HandleClient(pipe);
+                        // Handle each client on its own background thread so a slow or
+                        // stuck client does not block new connections.
+                        Thread clientThread = new Thread(() => HandleClient(pipe))
+                        {
+                            IsBackground = true,
+                            Name = "AutodeskNativeAgent.PipeClientHandler"
+                        };
+                        clientThread.Start();
                     }
                 }
                 catch (OperationCanceledException)
@@ -220,3 +227,4 @@ namespace AutodeskNativeAgent.Revit2024.Pipe
         }
     }
 }
+
