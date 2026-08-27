@@ -75,6 +75,12 @@ namespace AutodeskNativeAgent.Revit2024
                 // issue and reload the add-in. We log the failure to a local file as a last resort.
                 try
                 {
+                    string crashDir = System.IO.Path.GetDirectoryName(GetCrashLogPath());
+                    if (!System.IO.Directory.Exists(crashDir))
+                    {
+                        System.IO.Directory.CreateDirectory(crashDir);
+                    }
+
                     System.IO.File.AppendAllText(
                         GetCrashLogPath(),
                         DateTime.UtcNow.ToString("o") + " " + ex + Environment.NewLine);
