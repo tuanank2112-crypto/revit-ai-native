@@ -75,14 +75,16 @@ apps/revit-2024-addin (C# net48, IExternalApplication)
 
 ## Việc đang làm dở / còn thiếu
 
-- ⛔ **Chưa thể test end-to-end trong Revit** trên máy này (Revit đang đóng) → test manual theo `docs/MANUAL-TEST.md` (10 tests) bắt buộc chạy trên máy có Revit 2024 đang chạy.
+- ⛔ **Chưa thể test end-to-end trong Revit** trên máy này (Revit đang đóng) → test manual theo `docs/MANUAL-TEST.md` (11 tests) bắt buộc chạy trên máy có Revit 2024 đang chạy.
 - ⛔ **Chưa cài add-in vào Revit** (`scripts/install-revit2024.ps1` chưa chạy; cần restart Revit).
-- Chưa có test unit cho pipe framing (framing đã verify bằng so sánh mã 2 bên, chưa tự động).
+- ✅ (2026-08-27) Đã thêm **3 pipe integration tests** (framing, envelope, heartbeat, error envelope) — tổng 57 tests.
+- ✅ (2026-08-27) Đã fix **deadlock trong `PipeClient.ReadLoop`** (reader giữ `_sendGate` khi chặn đọc → `Request()` kẹt vĩnh viễn). Đây là bug chặn production.
+- ✅ (2026-08-27) Đã init **git repo** + `.github/workflows/ci.yml` (GitHub Actions).
 
 ## Compile/build errors hiện tại
 
 - **Không có.** Toàn solution build 0 error / 0 warning (Release, --no-incremental) tại thời điểm state này.
-- `dotnet test` 54/54 pass.
+- `dotnet test` **57/57 pass** (54 unit + 3 pipe integration).
 
 ## Các phần còn thiếu
 

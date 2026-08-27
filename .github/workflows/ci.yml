@@ -2,14 +2,13 @@
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main ]
   pull_request:
     branches: [ main ]
 
 jobs:
   build-and-test:
     runs-on: windows-latest
-
     steps:
     - uses: actions/checkout@v4
 
@@ -23,24 +22,24 @@ jobs:
       with:
         node-version: '20'
 
-    - name: Restore dependencies
-      run: dotnet restore
+    # The add-in project requires RevitAPI.dll which is NOT available on CI runners.
+    # Build the shared core (net48 + net8.0) and the test project instead; the add-in
+    # is compiled/verified locally on machines with Revit 2024 installed.
+    - name: Build Core (net48 + net8.0)
+      run: dotnet build libs/agent-core/AutodeskNativeAgent.Core.csproj -c Release
 
-    - name: Build solution
-      run: dotnet build -c Release --no-restore
+    - name: Build Tests
+      run: dotnet build tests/unit/AutodeskNativeAgent.Core.Tests/AutodeskNativeAgent.Core.Tests.csproj -c Release
 
-    - name: Run unit tests
-      run: dotnet test -c Release --no-build --verbosity normal
+    - name: Run Unit + Integration Tests
+      run: dotnet test tests/unit/AutodeskNativeAgent.Core.Tests/AutodeskNativeAgent.Core.Tests.csproj -c Release --no-build --verbosity normal
 
-    - name: Build MCP server
+    - name: Install MCP dependencies
       run: |
         cd apps/agent-mcp
         npm ci
-        npm run build
 
-    - name: Upload test results
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: test-results
-        path: tests/**/TestResults/
+    - name: Build MCP server (tsc)
+      run: |
+        cd apps/agent-mcp
+        npm run build
