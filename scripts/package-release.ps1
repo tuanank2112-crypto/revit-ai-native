@@ -1,4 +1,4 @@
-﻿# package-release.ps1 — Packages a release zip for distribution
+# package-release.ps1 — Packages a release zip for distribution
 [CmdletBinding()]
 param(
   [string]$Version = "1.0.0",
@@ -60,6 +60,14 @@ if (Test-Path "$root\samples\plans") {
 
 # Copy docs
 Copy-Item "$root\README.md" $staging -ErrorAction SilentlyContinue
+
+# Pack the Core library as a NuGet package (multi-target net48 + net8.0)
+$nupkgDir = "$root\artifacts\nupkg"
+New-Item -ItemType Directory -Path $nupkgDir -Force | Out-Null
+Write-Host "=== dotnet pack AutodeskNativeAgent.Core ===" -ForegroundColor Cyan
+dotnet pack "$root\libs\agent-core\AutodeskNativeAgent.Core.csproj" -c $Configuration -o $nupkgDir
+if ($LASTEXITCODE -ne 0) { throw "dotnet pack failed" }
+Copy-Item "$nupkgDir\*.nupkg" $staging -ErrorAction SilentlyContinue
 
 # Zip
 if (Test-Path $zipPath) { Remove-Item $zipPath -Force }

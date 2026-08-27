@@ -1,6 +1,6 @@
 # PROGRESS — Autodesk Native Agent Runtime
 
-> Status: **BUILD PASS — DONE (chờ verify thực tế trong Revit)**.
+> Status: **E2E PASS (12/12 trong Revit 2024 thật) — READY v1.0.0**.
 > Cập nhật cuối: 2026-08-27. Source code là source of truth; PROGRESS.md phản ánh trạng thái hiện tại.
 
 ## Phase status
@@ -49,20 +49,30 @@
 9. PowerShell scripts: thêm UTF-8 BOM (em dash bị đọc sai trên PS 5.1).
 10. Thêm samples/plans/sample-move-element.json (thiếu so với MANUAL-TEST TEST 5).
 
-## Chưa làm được (blocker khách quan)
+## E2E trong Revit 2024 (2026-08-27) — ✅ XONG
 
-- **E2E trong Revit**: máy không có Revit 2024 đang chạy → chưa cài add-in, chưa chạy 11 manual tests.
-- Cần người dùng: mở Revit 2024 → chạy install → verify → start MCP → test theo MANUAL-TEST.md.
-- **Chưa có integration test** cho pipe framing (chỉ có unit test contract logic).
-- **Chưa có CI/CD** pipeline.
+- Add-in tự load (`LoadingPolicy=AlwaysLoad` trong manifest, commit `6bc2b33`).
+- **12/12 tests pass** qua named pipe → add-in → main-thread dispatcher → PlanExecutor → Revit API:
+  status, document.get_info, plan.validate, plan.preview, plan.commit → awaiting_confirmation,
+  plan.confirm, commit completed + assertions (wall+door), element.move +1000mm (qua `$result.*` ref),
+  rollback on assertion failure, fingerprint guard, export.pdf, audit.log.
+- Fixes runtime đã làm trong quá trình E2E (chi tiết trong `git log`):
+  PipeClient deadlock, PipeServer dispose stream sớm, missing `revit_confirm_plan`, status cached document,
+  confirmation-resume state transition, token double-Accept, `JsonValue.String(null)` crash với `$result.*`.
+- Audit log giờ **persistence ra file**: `%LOCALAPPDATA%\AutodeskNativeAgent\logs\audit.jsonl` (JSON Lines, append-only).
+- Core library đã pack được **NuGet package** `AutodeskNativeAgent.Core 1.0.0` (net48 + net8.0); `package-release.ps1` pack + include vào release zip.
+
+## Chưa làm được local (cần GitHub / decision)
+
+- **Branch protection + CI chạy thật**: workflows `ci.yml`/`release.yml` đã có nhưng repo chưa có remote GitHub.
+- **NuGet feed**: publish `AutodeskNativeAgent.Core.nupkg` lên GitHub Packages / feed private.
+- **TIER 5 (feature extensions, kế hoạch dài hạn)**: Revit 2025, AutoCAD, undo/redo ops, streaming results, advanced element search.
 
 ## Next steps
 
-1. ✅ (xong) Fix xUnit2013 warning + `git init` + commit đầu tiên (2026-08-27).
-2. Thêm integration test cho pipe framing + envelope round-trip.
-3. Tạo GitHub Actions CI/CD (build, test, MCP build, release).
-4. Người dùng: `.\\scripts\\install-revit2024.ps1 -Configuration Release`
-5. Mở/restart Revit 2024 (add-in tự nạp).
-6. `.\\scripts\\verify-installation.ps1`
-7. `.\\scripts\\start-mcp.ps1` hoặc cấu hình MCP client `node dist/index.js`.
-8. Chạy `docs\\MANUAL-TEST.md` TEST 1–11, sửa nếu có lỗi runtime.
+1. ✅ (2026-08-27) Fix xUnit2013 + git init + integration tests + CI workflows.
+2. ✅ (2026-08-27) E2E 12/12 pass trong Revit 2024 thật + audit log file-based + NuGet pack + tag v1.0.0.
+3. Push repo lên GitHub → bật branch protection, CI chạy tự động.
+4. Publish `AutodeskNativeAgent.Core.nupkg` lên GitHub Packages (hoặc feed private).
+5. (Tuỳ chọn) Chạy lại E2E sau khi cài bản có audit-log-file: đóng Revit → `install-revit2024.ps1` → mở lại.
+6. TIER 5 theo kế hoạch dài hạn (Revit 2025, AutoCAD, …).

@@ -54,6 +54,13 @@ namespace AutodeskNativeAgent.Revit2024
                 _dispatcher.EnsureCreated();
                 _jobQueue = new JobQueue();
                 _auditLog = new AuditLog(maxEntries: 5000);
+                // Persist the audit trail to disk (JSON Lines, append-only) so it
+                // survives Revit shutdown. Best-effort: a failed disk write never
+                // blocks the runtime (see AuditLog.AttachFile).
+                string logDir = System.IO.Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                    "AutodeskNativeAgent", "logs");
+                _auditLog.AttachFile(System.IO.Path.Combine(logDir, "audit.jsonl"));
                 _tokenStore = new ConfirmationTokenStore();
 
                 // Pipe name is user-scoped so two users on one machine don't collide.
@@ -65,7 +72,7 @@ namespace AutodeskNativeAgent.Revit2024
                 _pipeServer.Start();
 
                 _auditLog.Append("system", "addin.startup", AuditSeverity.Info,
-                    "Autodesk Native Agent add-in started. Pipe: " + pipeName);
+                    "Autodesk Native Agent add-in started. Pipe: " + pipeName + "; audit file: " + System.IO.Path.Combine(logDir, "audit.jsonl"));
 
                 return Result.Succeeded;
             }

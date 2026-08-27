@@ -9,7 +9,23 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <LangVersion>9.0</LangVersion>
+
+    <!-- NuGet packaging (dotnet pack) so the runtime can be reused by other hosts. -->
+    <Version>1.0.0</Version>
+    <PackageId>AutodeskNativeAgent.Core</PackageId>
+    <PackageVersion>1.0.0</PackageVersion>
+    <Authors>Antigravity Agent Project</Authors>
+    <Description>Shared runtime contracts, JSON DOM, plan validation, security policy, job state machine and named-pipe protocol for the Autodesk Native Agent (Revit add-in + MCP server).</Description>
+    <PackageTags>autodesk;revit;agent;contracts;pipe</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryType>git</RepositoryType>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="" />
+  </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net48'">
     <Reference Include="System" />
