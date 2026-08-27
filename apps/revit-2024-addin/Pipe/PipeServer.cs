@@ -78,25 +78,28 @@ namespace AutodeskNativeAgent.Revit2024.Pipe
         {
             while (!_cts.IsCancellationRequested)
             {
+                NamedPipeServerStream pipe = null;
                 try
                 {
-                    using (var pipe = new NamedPipeServerStream(_pipeName, PipeDirection.InOut, 4, PipeTransmissionMode.Byte, PipeOptions.Asynchronous))
+                    // No `using` here: the stream's lifetime is owned by HandleClient,
+                    // which runs on its own thread and disposes it when the client
+                    // disconnects. A `using` block would dispose the stream the moment
+                    // this iteration ends, instantly killing the accepted connection.
+                    pipe = new NamedPipeServerStream(_pipeName, PipeDirection.InOut, 4, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
+                    pipe.WaitForConnection();
+                    if (_cts.IsCancellationRequested)
                     {
-                        pipe.WaitForConnection();
-                        if (_cts.IsCancellationRequested)
-                        {
-                            break;
-                        }
-
-                        // Handle each client on its own background thread so a slow or
-                        // stuck client does not block new connections.
-                        Thread clientThread = new Thread(() => HandleClient(pipe))
-                        {
-                            IsBackground = true,
-                            Name = "AutodeskNativeAgent.PipeClientHandler"
-                        };
-                        clientThread.Start();
+                        break;
                     }
+
+                    // Handle each client on its own background thread so a slow or
+                    // stuck client does not block new connections.
+                    Thread clientThread = new Thread(() => HandleClient(pipe))
+                    {
+                        IsBackground = true,
+                        Name = "AutodeskNativeAgent.PipeClientHandler"
+                    };
+                    clientThread.Start();
                 }
                 catch (OperationCanceledException)
                 {
@@ -105,6 +108,13 @@ namespace AutodeskNativeAgent.Revit2024.Pipe
                 catch (Exception)
                 {
                     // A transient pipe failure should not kill the server; retry after a pause.
+                    // If WaitForConnection failed before any client took the stream,
+                    // dispose the orphaned instance so we can re-create it.
+                    if (pipe != null)
+                    {
+                        try { pipe.Dispose(); } catch { }
+                    }
+
                     if (!_cts.IsCancellationRequested)
                     {
                         Thread.Sleep(200);
