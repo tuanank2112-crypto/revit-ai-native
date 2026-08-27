@@ -1,0 +1,117 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://autodesk-native-agent.local/schemas/query.schema.json",
+  "title": "ElementQuery",
+  "description": "Allowlisted query language. Only the operators listed here are accepted; arbitrary expressions are rejected.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["categories"],
+  "properties": {
+    "categories": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "where": {
+      "type": "object",
+      "description": "Logical tree: { all: [...], any: [...] } with conditions as leaves.",
+      "additionalProperties": false,
+      "properties": {
+        "all": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/logicalOrCondition"
+          }
+        },
+        "any": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/logicalOrCondition"
+          }
+        }
+      }
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "default": 100,
+      "description": "Overridden by the policy maximum if higher."
+    },
+    "include": {
+      "type": "array",
+      "items": {
+        "enum": ["identity", "type", "location", "parameters"]
+      },
+      "default": ["identity"]
+    }
+  },
+  "$defs": {
+    "logicalOrCondition": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/Condition"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["all"],
+          "properties": {
+            "all": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/Condition"
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["any"],
+          "properties": {
+            "any": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/Condition"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "Condition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["field", "operator"],
+      "properties": {
+        "field": {
+          "type": "string",
+          "description": "Structured field path, e.g. 'level.name', 'parameter.Mark', 'type.name'."
+        },
+        "operator": {
+          "enum": [
+            "equals",
+            "not_equals",
+            "contains",
+            "starts_with",
+            "ends_with",
+            "greater_than",
+            "greater_or_equal",
+            "less_than",
+            "less_or_equal",
+            "is_empty",
+            "is_not_empty",
+            "in"
+          ]
+        },
+        "value": {
+          "description": "Operand. Type depends on the operator and field."
+        }
+      }
+    }
+  }
+}

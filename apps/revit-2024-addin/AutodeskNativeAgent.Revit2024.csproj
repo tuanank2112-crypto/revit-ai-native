@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- Revit 2024 runs on .NET Framework 4.8. -->
+    <TargetFramework>net48</TargetFramework>
+    <RootNamespace>AutodeskNativeAgent.Revit2024</RootNamespace>
+    <AssemblyName>AutodeskNativeAgent.Revit2024</AssemblyName>
+    <PlatformTarget>x64</PlatformTarget>
+    <EnableDefaultCompileItems>true</EnableDefaultCompileItems>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <LangVersion>9.0</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Agent core: pure BCL, multi-targeted net48. -->
+    <ProjectReference Include="..\..\libs\agent-core\AutodeskNativeAgent.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Revit API references are resolved by Directory.Build.props probing (REVIT_2024_PATH,
+         default install path, alternate root) and validated by Directory.Build.targets. -->
+    <Reference Include="RevitAPI">
+      <HintPath>$(RevitApiDir)\RevitAPI.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="RevitAPIUI">
+      <HintPath>$(RevitApiDir)\RevitAPIUI.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Addin\AutodeskNativeAgent.addin" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <!-- Revit add-ins are loaded from the Addins folder; the manifest keeps the plugin
+       discoverable by Revit's AddInManager. -->
+  <Target Name="CopyAddinToOutput" AfterTargets="Build">
+    <Copy SourceFiles="Addin\AutodeskNativeAgent.addin"
+          DestinationFolder="$(OutDir)"
+          Condition="Exists('Addin\AutodeskNativeAgent.addin')" />
+  </Target>
+
+</Project>

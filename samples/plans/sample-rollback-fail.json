@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "1.0",
+  "requestId": "sample-rollback-fail-001",
+  "description": "Intentionally fail an assertion to verify rollback works",
+  "document": { "strategy": "active_document" },
+  "units": "mm",
+  "coordinateSystem": "project",
+  "executionMode": "commit",
+  "operations": [
+    {
+      "id": "wall-rollback-001",
+      "op": "wall.create",
+      "args": {
+        "start": { "x": 0, "y": 0, "z": 0 },
+        "end": { "x": 5000, "y": 0, "z": 0 },
+        "height": 3000,
+        "level": { "strategy": "active_view_level" },
+        "type": { "strategy": "project_default_or_fail" },
+        "locationLine": "wall_centerline"
+      },
+      "assertions": [
+        {
+          "kind": "length",
+          "target": "$result.wall-rollback-001",
+          "equals": 9999,
+          "unit": "mm",
+          "tolerance": 1
+        }
+      ]
+    }
+  ],
+  "safety": {
+    "requireUserConfirmation": true,
+    "maximumElementsAffected": 5,
+    "rollbackOnValidationFailure": true
+  }
+}

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>Autodesk Native Agent</Name>
+    <Assembly>AutodeskNativeAgent.Revit2024.dll</Assembly>
+    <FullClassName>AutodeskNativeAgent.Revit2024.AgentAddInApplication</FullClassName>
+    <ClientId>9F8E7D6C-5B4A-3D2C-1E0F-9A8B7C6D5E4F</ClientId>
+    <VendorId>ANTG</VendorId>
+    <VendorDescription>Autodesk Native Agent Project</VendorDescription>
+    <AddInId>58bfd92e-8c28-421d-87d1-da5d3de4829d</AddInId>
+  </AddIn>
+</RevitAddIns>

@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net48;net8.0</TargetFrameworks>
+    <RootNamespace>AutodeskNativeAgent.Core</RootNamespace>
+    <AssemblyName>AutodeskNativeAgent.Core</AssemblyName>
+    <PlatformTarget>x64</PlatformTarget>
+    <EnableDefaultCompileItems>true</EnableDefaultCompileItems>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <LangVersion>9.0</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net48'">
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+
+  <!-- Contract schemas are part of the shipped allowlist. Embed them so validation
+       works identically inside Revit and in the MCP server, with no file-system
+       dependency at runtime. -->
+  <ItemGroup>
+    <EmbeddedResource Include="..\contracts\schemas\**\*.schema.json">
+      <LogicalName>AutodeskNativeAgent.Core.Schemas.%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
+</Project>

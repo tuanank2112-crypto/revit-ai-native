@@ -1,0 +1,94 @@
+{
+  "schemaVersion": "1.0",
+  "requestId": "sample-wall-door-001",
+  "description": "Create a 5000mm wall with a 900x2200mm door at 1200mm offset",
+  "document": {
+    "strategy": "active_document"
+  },
+  "units": "mm",
+  "coordinateSystem": "project",
+  "executionMode": "commit",
+  "operations": [
+    {
+      "id": "wall-001",
+      "op": "wall.create",
+      "args": {
+        "start": { "x": 0, "y": 0, "z": 0 },
+        "end": { "x": 5000, "y": 0, "z": 0 },
+        "height": 3000,
+        "baseOffset": 0,
+        "structural": false,
+        "level": {
+          "strategy": "active_view_level"
+        },
+        "type": {
+          "strategy": "project_default_or_fail"
+        },
+        "locationLine": "wall_centerline"
+      },
+      "assertions": [
+        {
+          "kind": "element_exists",
+          "target": "$result.wall-001",
+          "expect": true,
+          "tolerance": 0
+        },
+        {
+          "kind": "length",
+          "target": "$result.wall-001",
+          "equals": 5000,
+          "unit": "mm",
+          "tolerance": 1
+        },
+        {
+          "kind": "height",
+          "target": "$result.wall-001",
+          "equals": 3000,
+          "unit": "mm",
+          "tolerance": 1
+        }
+      ]
+    },
+    {
+      "id": "door-001",
+      "op": "door.insert",
+      "dependsOn": ["wall-001"],
+      "args": {
+        "host": { "viaOperationResult": "$result.wall-001" },
+        "location": {
+          "strategy": "offset_from_wall_start",
+          "offset": 1200
+        },
+        "type": {
+          "strategy": "preferred_or_dimensions",
+          "desiredWidth": 900,
+          "desiredHeight": 2200
+        },
+        "level": {
+          "strategy": "active_view_level"
+        }
+      },
+      "assertions": [
+        {
+          "kind": "element_exists",
+          "target": "$result.door-001",
+          "expect": true,
+          "tolerance": 0
+        },
+        {
+          "kind": "host_equals",
+          "target": "$result.door-001",
+          "host": "$result.wall-001",
+          "tolerance": 0
+        }
+      ]
+    }
+  ],
+  "safety": {
+    "requireUserConfirmation": true,
+    "createBackupBeforeCommit": false,
+    "maximumElementsAffected": 10,
+    "rollbackOnWarning": false,
+    "rollbackOnValidationFailure": true
+  }
+}

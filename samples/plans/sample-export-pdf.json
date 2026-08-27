@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "1.0",
+  "requestId": "sample-export-pdf-001",
+  "description": "Export the active view to PDF",
+  "document": { "strategy": "active_document" },
+  "units": "mm",
+  "coordinateSystem": "project",
+  "executionMode": "commit",
+  "operations": [
+    {
+      "id": "export-pdf-001",
+      "op": "export.pdf",
+      "args": {
+        "outputDirectory": "C:\\Exports",
+        "baseName": "revit-export-test",
+        "views": [
+          { "uniqueId": "PLACEHOLDER-REPLACE-WITH-VIEW-UNIQUEID" }
+        ],
+        "combine": true,
+        "overwrite": true,
+        "quality": "medium",
+        "orientation": "landscape",
+        "paperSize": "A1"
+      }
+    }
+  ],
+  "safety": {
+    "requireUserConfirmation": true,
+    "maximumElementsAffected": 0,
+    "rollbackOnValidationFailure": true
+  }
+}

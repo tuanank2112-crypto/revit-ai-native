@@ -1,0 +1,24 @@
+<Project>
+
+  <!-- =====================================================================
+       Build-time validation: fail loudly instead of silently substituting a
+       stand-in assembly when Revit API DLLs are missing.
+       ===================================================================== -->
+  <Target Name="ValidateRevitApi"
+          Condition="'$(EnableRevitApiValidation)' != 'false'"
+          BeforeTargets="ResolveAssemblyReferences">
+
+    <PropertyGroup>
+      <_RevitApi>$(RevitApiDir)\RevitAPI.dll</_RevitApi>
+      <_RevitApiUi>$(RevitApiDir)\RevitAPIUI.dll</_RevitApiUi>
+    </PropertyGroup>
+
+    <Error Condition="'$(RevitApiDir)' == ''"
+           Text="Revit 2024 API directory was not found. Set REVIT_2024_PATH to the Revit 2024 install folder (e.g. 'C:\Program Files\Autodesk\Revit 2024'), or pass -p:RevitApiDir=...." />
+    <Error Condition="!Exists('$(_RevitApi)')"
+           Text="RevitAPI.dll is missing. Looked for: '$(_RevitApi)'. Set REVIT_2024_PATH to the folder that contains RevitAPI.dll." />
+    <Error Condition="!Exists('$(_RevitApiUi)')"
+           Text="RevitAPIUI.dll is missing. Looked for: '$(_RevitApiUi)'. Set REVIT_2024_PATH to the folder that contains RevitAPIUI.dll." />
+  </Target>
+
+</Project>

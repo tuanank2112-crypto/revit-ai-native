@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://autodesk-native-agent.local/schemas/assertion.schema.json",
+  "title": "Assertion",
+  "description": "A post-execution check. A failed mandatory assertion rolls the plan back.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["kind", "target"],
+  "properties": {
+    "kind": {
+      "enum": [
+        "element_exists",
+        "element_count",
+        "category",
+        "type_name",
+        "level_name",
+        "length",
+        "height",
+        "width",
+        "position",
+        "angle",
+        "parameter_equals",
+        "parameter_not_empty",
+        "host_equals",
+        "bounding_box_within"
+      ]
+    },
+    "target": {
+      "type": "string",
+      "description": "An element reference: '$result.<opId>' or an explicit reference."
+    },
+    "equals": {
+      "description": "Expected value (number, string, or nested object depending on kind)."
+    },
+    "unit": {
+      "type": "string",
+      "enum": ["mm", "cm", "m", "inch", "ft", "deg"]
+    },
+    "tolerance": {
+      "type": "number",
+      "minimum": 0
+    },
+    "expect": {
+      "description": "For element_exists / element_count: true or false / exact count."
+    },
+    "parameter": {
+      "type": "string",
+      "description": "Parameter name or GUID for parameter_equals / parameter_not_empty."
+    },
+    "host": {
+      "type": "string",
+      "description": "Reference to the expected host element."
+    },
+    "region": {
+      "type": "object",
+      "description": "For bounding_box_within: { min: {x,y,z}, max: {x,y,z} } in plan units."
+    }
+  }
+}

@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://autodesk-native-agent.local/schemas/preview-report.schema.json",
+  "title": "PreviewReport",
+  "description": "Dry-run report produced by revit_preview_plan. It never mutates the model.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["planHash", "documentFingerprint", "dryRun", "operations", "summary"],
+  "properties": {
+    "planHash": {
+      "type": "string"
+    },
+    "documentFingerprint": {
+      "type": "string"
+    },
+    "dryRun": {
+      "const": true
+    },
+    "createdAtUtc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "operations": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/operationPreview"
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "$ref": "pipe-envelope.schema.json#/$defs/agentError"
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["willCreate", "willModify", "willDelete", "estimatedAffectedElements", "requiresUserConfirmation"],
+      "properties": {
+        "willCreate": {
+          "type": "integer"
+        },
+        "willModify": {
+          "type": "integer"
+        },
+        "willDelete": {
+          "type": "integer"
+        },
+        "estimatedAffectedElements": {
+          "type": "integer"
+        },
+        "requiresUserConfirmation": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "operationPreview": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["operationId", "operation", "status"],
+      "properties": {
+        "operationId": {
+          "type": "string"
+        },
+        "operation": {
+          "type": "string"
+        },
+        "status": {
+          "enum": ["ready", "blocked", "skipped", "error"]
+        },
+        "willCreate": {
+          "type": "integer",
+          "default": 0
+        },
+        "willModify": {
+          "type": "integer",
+          "default": 0
+        },
+        "willDelete": {
+          "type": "integer",
+          "default": 0
+        },
+        "resolved": {
+          "type": "object",
+          "properties": {
+            "level": {
+              "type": "object"
+            },
+            "type": {
+              "type": "object"
+            },
+            "host": {
+              "type": "object"
+            }
+          }
+        },
+        "measurements": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object"
+          }
+        },
+        "hardDefaultsUsed": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "$ref": "pipe-envelope.schema.json#/$defs/agentError"
+          }
+        }
+      }
+    }
+  }
+}

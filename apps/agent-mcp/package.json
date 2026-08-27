@@ -1,0 +1,22 @@
+{
+  "name": "autodesk-native-agent-mcp",
+  "version": "1.0.0",
+  "description": "MCP server bridging Antigravity/AI agents to Autodesk Revit 2024",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "autodesk-native-agent-mcp": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^0.6.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "@types/node": "^20.11.0"
+  }
+}

@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://autodesk-native-agent.local/schemas/agent-plan.schema.json",
+  "title": "AgentPlan",
+  "description": "A structured plan of operations that an AI agent asks the Revit Runtime to execute. Every length value MUST carry an explicit unit at plan level.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "requestId",
+    "description",
+    "document",
+    "units",
+    "coordinateSystem",
+    "executionMode",
+    "operations",
+    "safety"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "1.0"
+    },
+    "requestId": {
+      "$ref": "#/$defs/uuid"
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512
+    },
+    "document": {
+      "$ref": "#/$defs/documentTarget"
+    },
+    "units": {
+      "$ref": "#/$defs/lengthUnit"
+    },
+    "coordinateSystem": {
+      "enum": ["internal", "project", "shared", "active_view"]
+    },
+    "executionMode": {
+      "enum": ["preview", "commit"]
+    },
+    "operations": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 100,
+      "items": {
+        "$ref": "operation.schema.json"
+      }
+    },
+    "safety": {
+      "$ref": "#/$defs/safetySettings"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Free-form non-functional metadata (e.g. traceId, agent session). Never treated as executable.",
+      "maxProperties": 20
+    }
+  },
+  "$defs": {
+    "uuid": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+    },
+    "lengthUnit": {
+      "enum": ["mm", "cm", "m", "inch", "ft"]
+    },
+    "documentTarget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["strategy"],
+      "properties": {
+        "strategy": {
+          "enum": ["active_document"]
+        },
+        "expectedTitle": {
+          "type": ["string", "null"]
+        },
+        "expectedPath": {
+          "type": ["string", "null"]
+        },
+        "expectedFingerprint": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "safetySettings": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "requireUserConfirmation",
+        "createBackupBeforeCommit",
+        "maximumElementsAffected",
+        "rollbackOnWarning",
+        "rollbackOnValidationFailure"
+      ],
+      "properties": {
+        "requireUserConfirmation": {
+          "type": "boolean"
+        },
+        "createBackupBeforeCommit": {
+          "type": "boolean"
+        },
+        "maximumElementsAffected": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100000
+        },
+        "rollbackOnWarning": {
+          "type": "boolean"
+        },
+        "rollbackOnValidationFailure": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

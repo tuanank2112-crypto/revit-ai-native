@@ -1,0 +1,60 @@
+<Project>
+
+  <!-- =====================================================================
+       Shared settings for every .NET project in the repository.
+       ===================================================================== -->
+  <PropertyGroup>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningLevel>4</WarningLevel>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <Deterministic>true</Deterministic>
+    <NeutralLanguage>en</NeutralLanguage>
+
+    <Product>Autodesk Native Agent Runtime</Product>
+    <!-- PLACEHOLDER: replace with your organisation name before release. -->
+    <Company>Autodesk Native Agent Project</Company>
+    <Version>1.0.0</Version>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+
+    <!-- Revit loads every add-in into one AppDomain. Deterministic, explicit
+         assembly resolution matters more here than in a standalone app. -->
+    <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
+  </PropertyGroup>
+
+  <!-- =====================================================================
+       Revit 2024 API discovery.
+
+       Resolution order (first hit wins):
+         1. -p:RevitApiDir=...        explicit build argument
+         2. %REVIT_2024_PATH%         environment variable
+         3. Default install location
+         4. Known alternate install roots
+
+       Nothing is ever substituted with a stand-in assembly: if none of these
+       resolve, the ValidateRevitApi target in Directory.Build.targets fails
+       the build with actionable guidance.
+       ===================================================================== -->
+  <PropertyGroup Condition="'$(RevitApiDir)' == '' AND '$(REVIT_2024_PATH)' != '' AND Exists('$(REVIT_2024_PATH)\RevitAPI.dll')">
+    <RevitApiDir>$(REVIT_2024_PATH)</RevitApiDir>
+    <RevitApiDirSource>REVIT_2024_PATH environment variable</RevitApiDirSource>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(RevitApiDir)' == '' AND Exists('C:\Program Files\Autodesk\Revit 2024\RevitAPI.dll')">
+    <RevitApiDir>C:\Program Files\Autodesk\Revit 2024</RevitApiDir>
+    <RevitApiDirSource>default install location</RevitApiDirSource>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(RevitApiDir)' == '' AND Exists('D:\REVIT\2024\Revit 2024\RevitAPI.dll')">
+    <RevitApiDir>D:\REVIT\2024\Revit 2024</RevitApiDir>
+    <RevitApiDirSource>alternate install root (D:\REVIT\2024)</RevitApiDirSource>
+  </PropertyGroup>
+
+  <!-- Optional, git-ignored, per-developer override. Imported last so it can
+       replace anything probed above. -->
+  <Import Project="$(MSBuildThisFileDirectory)Directory.Build.local.props"
+          Condition="Exists('$(MSBuildThisFileDirectory)Directory.Build.local.props')" />
+
+</Project>

@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://autodesk-native-agent.local/schemas/operation.schema.json",
+  "title": "PlanOperation",
+  "description": "A single operation inside an AgentPlan. Arguments are validated against the per-operation schema in schemas/operations/.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "op", "args"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9._-]{1,64}$"
+    },
+    "op": {
+      "type": "string",
+      "pattern": "^[a-z]+\\.[a-z_]+$",
+      "description": "Operation name from the Command Registry allowlist."
+    },
+    "dependsOn": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-zA-Z0-9._-]{1,64}$"
+      },
+      "default": []
+    },
+    "args": {
+      "type": "object",
+      "description": "Operation-specific arguments; validated by the per-operation schema.",
+      "maxProperties": 64
+    },
+    "assertions": {
+      "type": "array",
+      "items": {
+        "$ref": "assertion.schema.json"
+      },
+      "default": []
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Non-functional metadata such as the reason this operation exists.",
+      "maxProperties": 10
+    }
+  }
+}

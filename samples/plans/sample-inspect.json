@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "1.0",
+  "requestId": "sample-inspect-001",
+  "description": "Inspect the active document and current selection",
+  "document": { "strategy": "active_document" },
+  "units": "mm",
+  "coordinateSystem": "project",
+  "executionMode": "preview",
+  "operations": [
+    {
+      "id": "inspect-doc",
+      "op": "document.get_info",
+      "args": {}
+    }
+  ],
+  "safety": {
+    "requireUserConfirmation": false,
+    "maximumElementsAffected": 0,
+    "rollbackOnValidationFailure": true
+  }
+}

@@ -1,0 +1,33 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutodeskNativeAgent.Core", "libs\agent-core\AutodeskNativeAgent.Core.csproj", "{1B7A2F30-6C41-4D8E-9E7B-4A1C5D0E9F01}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutodeskNativeAgent.Core.Tests", "tests\unit\AutodeskNativeAgent.Core.Tests\AutodeskNativeAgent.Core.Tests.csproj", "{2C8B3F41-7D52-4E9F-8F6C-5B2D6E1F0A12}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutodeskNativeAgent.Revit2024", "apps\revit-2024-addin\AutodeskNativeAgent.Revit2024.csproj", "{3D9C4052-8E63-4FA0-9007-6C3E7F2A1B23}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1B7A2F30-6C41-4D8E-9E7B-4A1C5D0E9F01}.Debug|x64.ActiveCfg = Debug|x64
+		{1B7A2F30-6C41-4D8E-9E7B-4A1C5D0E9F01}.Debug|x64.Build.0 = Debug|x64
+		{1B7A2F30-6C41-4D8E-9E7B-4A1C5D0E9F01}.Release|x64.ActiveCfg = Release|x64
+		{1B7A2F30-6C41-4D8E-9E7B-4A1C5D0E9F01}.Release|x64.Build.0 = Release|x64
+		{2C8B3F41-7D52-4E9F-8F6C-5B2D6E1F0A12}.Debug|x64.ActiveCfg = Debug|x64
+		{2C8B3F41-7D52-4E9F-8F6C-5B2D6E1F0A12}.Debug|x64.Build.0 = Debug|x64
+		{2C8B3F41-7D52-4E9F-8F6C-5B2D6E1F0A12}.Release|x64.ActiveCfg = Release|x64
+		{2C8B3F41-7D52-4E9F-8F6C-5B2D6E1F0A12}.Release|x64.Build.0 = Release|x64
+		{3D9C4052-8E63-4FA0-9007-6C3E7F2A1B23}.Debug|x64.ActiveCfg = Debug|x64
+		{3D9C4052-8E63-4FA0-9007-6C3E7F2A1B23}.Debug|x64.Build.0 = Debug|x64
+		{3D9C4052-8E63-4FA0-9007-6C3E7F2A1B23}.Release|x64.ActiveCfg = Release|x64
+		{3D9C4052-8E63-4FA0-9007-6C3E7F2A1B23}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://autodesk-native-agent.local/schemas/element-reference.schema.json",
+  "title": "ElementReference",
+  "description": "A stable reference to a Revit element. UniqueId is the strongest signal; ElementId alone is never sufficient.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "documentFingerprint": {
+      "type": "string",
+      "description": "Fingerprint of the document this reference was captured in."
+    },
+    "uniqueId": {
+      "type": "string"
+    },
+    "elementId": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "category": {
+      "type": "string",
+      "description": "Expected Revit category name, e.g. 'Walls'."
+    },
+    "expectedName": {
+      "type": "string"
+    },
+    "expectedTypeName": {
+      "type": "string"
+    },
+    "viaOperationResult": {
+      "type": "string",
+      "description": "'$result.<opId>' — resolved by the ResultReferenceResolver during plan execution."
+    }
+  },
+  "anyOf": [
+    { "required": ["uniqueId"] },
+    { "required": ["elementId"] },
+    { "required": ["viaOperationResult"] }
+  ]
+}

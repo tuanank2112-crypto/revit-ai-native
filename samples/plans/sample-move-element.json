@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "1.0",
+  "requestId": "sample-move-element-001",
+  "description": "Move an element by 1000mm in X (replace uniqueId with a real element uniqueId)",
+  "document": {
+    "strategy": "active_document"
+  },
+  "units": "mm",
+  "coordinateSystem": "project",
+  "executionMode": "commit",
+  "operations": [
+    {
+      "id": "move-001",
+      "op": "element.move",
+      "args": {
+        "target": {
+          "uniqueId": "REPLACE_WITH_ELEMENT_UNIQUE_ID"
+        },
+        "vector": { "x": 1000, "y": 0, "z": 0 }
+      },
+      "assertions": []
+    }
+  ],
+  "safety": {
+    "requireUserConfirmation": true,
+    "createBackupBeforeCommit": false,
+    "maximumElementsAffected": 10,
+    "rollbackOnWarning": false,
+    "rollbackOnValidationFailure": true
+  }
+}

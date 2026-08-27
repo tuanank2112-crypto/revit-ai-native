@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://autodesk-native-agent.local/schemas/operations/parameter.set.schema.json",
+  "title": "parameter.set arguments",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["target", "parameter", "value"],
+  "properties": {
+    "target": {
+      "$ref": "../element-reference.schema.json"
+    },
+    "parameter": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Exactly one identification strategy must be supplied.",
+      "properties": {
+        "builtIn": {
+          "type": "string",
+          "description": "BuiltInParameter enum name, e.g. ALL_MODEL_MARK."
+        },
+        "guid": {
+          "type": "string",
+          "description": "Shared parameter GUID."
+        },
+        "name": {
+          "type": "string",
+          "description": "Display name. Fails with AMBIGUOUS_PARAMETER when not unique."
+        },
+        "scope": {
+          "enum": ["instance", "type"],
+          "default": "instance"
+        }
+      },
+      "oneOf": [
+        { "required": ["builtIn"] },
+        { "required": ["guid"] },
+        { "required": ["name"] }
+      ]
+    },
+    "value": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind"],
+      "description": "Typed value. The kind must match the parameter's storage type; a string is never coerced into a numeric parameter.",
+      "properties": {
+        "kind": {
+          "enum": ["string", "integer", "double", "boolean", "elementId", "length", "area", "angle"]
+        },
+        "string": { "type": "string" },
+        "integer": { "type": "integer" },
+        "double": { "type": "number" },
+        "boolean": { "type": "boolean" },
+        "elementId": { "type": "integer" },
+        "number": {
+          "type": "number",
+          "description": "Magnitude for length / area / angle kinds."
+        },
+        "unit": {
+          "type": "string",
+          "enum": ["mm", "cm", "m", "inch", "ft", "mm2", "m2", "ft2", "deg", "rad"],
+          "description": "Required for length, area and angle kinds."
+        }
+      }
+    },
+    "acknowledgeSharedTypeImpact": {
+      "type": "boolean",
+      "default": false,
+      "description": "Required to be true when writing a type parameter that affects multiple instances."
+    }
+  }
+}

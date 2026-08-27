@@ -1,0 +1,222 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://autodesk-native-agent.local/schemas/execution-result.schema.json",
+  "title": "ExecutionResult",
+  "description": "Structured result of a committed plan, returned by revit_get_job_status once the job reaches a terminal state.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["jobId", "status", "documentFingerprint", "planHash"],
+  "properties": {
+    "jobId": {
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "queued",
+        "waiting_for_revit",
+        "validating",
+        "awaiting_confirmation",
+        "executing",
+        "verifying",
+        "completed",
+        "failed",
+        "cancelled",
+        "rolled_back",
+        "timed_out"
+      ]
+    },
+    "documentFingerprint": {
+      "type": "string"
+    },
+    "planHash": {
+      "type": "string"
+    },
+    "startedAtUtc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "completedAtUtc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "atomic": {
+      "type": "boolean",
+      "default": true
+    },
+    "operations": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/operationResult"
+      }
+    },
+    "assertions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/assertionResult"
+      }
+    },
+    "rollback": {
+      "$ref": "#/$defs/rollbackInfo"
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "$ref": "pipe-envelope.schema.json#/$defs/agentError"
+      }
+    }
+  },
+  "$defs": {
+    "operationResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["operationId", "operation", "status"],
+      "properties": {
+        "operationId": {
+          "type": "string"
+        },
+        "operation": {
+          "type": "string"
+        },
+        "status": {
+          "enum": ["completed", "failed", "skipped", "rolled_back"]
+        },
+        "createdElements": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/elementSummary"
+          }
+        },
+        "modifiedElements": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/elementSummary"
+          }
+        },
+        "deletedElements": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/elementSummary"
+          }
+        },
+        "resolved": {
+          "type": "object",
+          "properties": {
+            "level": {
+              "type": "object"
+            },
+            "type": {
+              "type": "object"
+            },
+            "host": {
+              "type": "object"
+            }
+          }
+        },
+        "measurements": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/measurement"
+          }
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "elementSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["elementId", "uniqueId", "category"],
+      "properties": {
+        "elementId": {
+          "type": "integer"
+        },
+        "uniqueId": {
+          "type": "string"
+        },
+        "category": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "typeName": {
+          "type": "string"
+        }
+      }
+    },
+    "measurement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["requested", "actual", "unit", "difference", "tolerance", "passed"],
+      "properties": {
+        "requested": {
+          "type": "number"
+        },
+        "actual": {
+          "type": "number"
+        },
+        "unit": {
+          "type": "string"
+        },
+        "difference": {
+          "type": "number"
+        },
+        "tolerance": {
+          "type": "number"
+        },
+        "passed": {
+          "type": "boolean"
+        }
+      }
+    },
+    "assertionResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "target", "expected", "actual", "difference", "tolerance", "passed"],
+      "properties": {
+        "kind": {
+          "type": "string"
+        },
+        "target": {
+          "type": "string"
+        },
+        "expected": {},
+        "actual": {},
+        "difference": {
+          "type": ["number", "null"]
+        },
+        "tolerance": {
+          "type": ["number", "null"]
+        },
+        "passed": {
+          "type": "boolean"
+        }
+      }
+    },
+    "rollbackInfo": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "performed": {
+          "type": "boolean"
+        },
+        "reason": {
+          "type": ["string", "null"]
+        },
+        "restoredDocumentFingerprint": {
+          "type": ["string", "null"]
+        }
+      }
+    }
+  }
+}

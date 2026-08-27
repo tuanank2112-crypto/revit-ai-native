@@ -1,0 +1,18 @@
+{
+  "name": "autodesk-native-agent",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Native Execution Runtime letting AI agents drive Autodesk Revit 2024 through MCP.",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "workspaces": [
+    "apps/agent-mcp"
+  ],
+  "scripts": {
+    "build": "npm run build --workspace apps/agent-mcp",
+    "test": "npm run test --workspace apps/agent-mcp",
+    "clean": "npm run clean --workspace apps/agent-mcp"
+  }
+}

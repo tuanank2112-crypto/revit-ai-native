@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://autodesk-native-agent.local/schemas/pipe-envelope.schema.json",
+  "title": "PipeEnvelope",
+  "description": "Envelope of every message exchanged between the MCP Server and the Revit Add-in over the Named Pipe.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "protocolVersion",
+    "requestId",
+    "type",
+    "timestampUtc"
+  ],
+  "properties": {
+    "protocolVersion": {
+      "const": "1.0"
+    },
+    "requestId": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 64
+    },
+    "correlationId": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 64
+    },
+    "type": {
+      "enum": ["request", "response", "heartbeat", "hello", "error"]
+    },
+    "method": {
+      "type": "string",
+      "pattern": "^[a-z_]+$"
+    },
+    "timestampUtc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "payload": {
+      "type": ["object", "null"]
+    },
+    "success": {
+      "type": "boolean"
+    },
+    "data": {
+      "description": "Response payload for successful responses."
+    },
+    "error": {
+      "$ref": "#/$defs/agentError"
+    }
+  },
+  "$defs": {
+    "agentError": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "message"],
+      "properties": {
+        "code": {
+          "type": "string",
+          "description": "Stable machine-readable error code, e.g. UNIT_AMBIGUOUS."
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "object"
+        },
+        "recoverable": {
+          "type": "boolean"
+        },
+        "suggestedAction": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

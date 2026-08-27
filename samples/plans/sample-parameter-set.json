@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "1.0",
+  "requestId": "sample-parameter-set-001",
+  "description": "Set a parameter on the selected element",
+  "document": { "strategy": "active_document" },
+  "units": "mm",
+  "coordinateSystem": "project",
+  "executionMode": "commit",
+  "operations": [
+    {
+      "id": "param-001",
+      "op": "parameter.set",
+      "args": {
+        "target": {
+          "uniqueId": "PLACEHOLDER-REPLACE-WITH-SELECTED-ELEMENT-UNIQUEID"
+        },
+        "parameter": "Comments",
+        "value": "Reviewed by agent",
+        "storageType": "String"
+      }
+    }
+  ],
+  "safety": {
+    "requireUserConfirmation": true,
+    "maximumElementsAffected": 1,
+    "rollbackOnValidationFailure": true
+  }
+}

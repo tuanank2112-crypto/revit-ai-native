@@ -1,0 +1,122 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://autodesk-native-agent.local/schemas/project-policy.schema.json",
+  "title": "ProjectPolicy",
+  "description": "Machine-readable policy governing defaults, preferred types, tolerances and safety for a project. Loaded from config/project-policy.json (git-ignored); example in config/project-policy.example.json.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["policyVersion"],
+  "properties": {
+    "policyVersion": {
+      "const": "1.0"
+    },
+    "defaultExternalUnit": {
+      "enum": ["mm", "cm", "m", "inch", "ft"]
+    },
+    "allowHardDefaults": {
+      "type": "boolean",
+      "default": false
+    },
+    "defaults": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "wallHeightMm": {
+          "type": "number"
+        },
+        "doorWidthMm": {
+          "type": "number"
+        },
+        "doorHeightMm": {
+          "type": "number"
+        },
+        "windowWidthMm": {
+          "type": "number"
+        },
+        "windowHeightMm": {
+          "type": "number"
+        },
+        "windowSillHeightMm": {
+          "type": "number"
+        }
+      }
+    },
+    "preferredTypes": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "wall": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "door": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "window": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "titleBlock": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "tolerances": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "lengthMm": {
+          "type": "number",
+          "default": 1
+        },
+        "positionMm": {
+          "type": "number",
+          "default": 1
+        },
+        "angleDegrees": {
+          "type": "number",
+          "default": 0.1
+        }
+      }
+    },
+    "safety": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "alwaysPreviewDelete": {
+          "type": "boolean",
+          "default": true
+        },
+        "alwaysPreviewMoreThanElements": {
+          "type": "integer",
+          "default": 20
+        },
+        "requireConfirmationForSaveAs": {
+          "type": "boolean",
+          "default": true
+        },
+        "requireConfirmationForExport": {
+          "type": "boolean",
+          "default": false
+        },
+        "exportRootDirectories": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Canonicalized roots under which export paths are allowed."
+        }
+      }
+    }
+  }
+}

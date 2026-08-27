@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://autodesk-native-agent.local/schemas/operations/wall.create.schema.json",
+  "title": "wall.create arguments",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["start", "end", "height", "level", "type"],
+  "properties": {
+    "start": { "$ref": "#/$defs/point3d" },
+    "end": { "$ref": "#/$defs/point3d" },
+    "height": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "description": "Unqualified height in the plan's units."
+    },
+    "baseOffset": { "type": "number", "default": 0 },
+    "topOffset": { "type": "number", "default": 0 },
+    "structural": { "type": "boolean", "default": false },
+    "level": { "$ref": "#/$defs/levelSelector" },
+    "type": { "$ref": "#/$defs/typeSelector" },
+    "locationLine": {
+      "enum": [
+        "wall_centerline",
+        "core_centerline",
+        "finish_face_exterior",
+        "finish_face_interior",
+        "core_face_exterior",
+        "core_face_interior"
+      ],
+      "default": "wall_centerline"
+    }
+  },
+  "$defs": {
+    "point3d": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["x", "y"],
+      "properties": {
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "z": { "type": "number", "default": 0 }
+      }
+    },
+    "levelSelector": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["strategy"],
+      "properties": {
+        "strategy": {
+          "enum": [
+            "explicit_unique_id",
+            "exact_name",
+            "active_view_level",
+            "nearest_by_elevation",
+            "project_default_or_fail",
+            "host_level"
+          ]
+        },
+        "uniqueId": { "type": "string" },
+        "name": { "type": "string" },
+        "elevation": { "type": "number" }
+      }
+    },
+    "typeSelector": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["strategy"],
+      "properties": {
+        "strategy": {
+          "enum": [
+            "explicit_unique_id",
+            "exact_name",
+            "project_policy",
+            "project_default_or_fail",
+            "preferred_or_dimensions",
+            "most_used_in_project"
+          ]
+        },
+        "uniqueId": { "type": "string" },
+        "elementId": { "type": "integer" },
+        "familyName": { "type": ["string", "null"] },
+        "typeName": { "type": ["string", "null"] },
+        "desiredWidth": { "type": "number" },
+        "desiredHeight": { "type": "number" }
+      }
+    }
+  }
+}
