@@ -73,5 +73,7 @@ jobs:
     - name: Upload Release Asset
       uses: softprops/action-gh-release@v2
       with:
-        files: ${{ runner.temp }}/AutodeskNativeAgent-*.zip
+        files: |
+          ${{ runner.temp }}/AutodeskNativeAgent-*.zip
+          ${{ runner.temp }}/nupkg/*.nupkg
         generate_release_notes: true
