@@ -67,3 +67,6 @@ logs/
 Thumbs.db
 desktop.ini
 .DS_Store
+
+# --- Agent scratch (API audit scripts, probes, dumps) ---
+scratch/

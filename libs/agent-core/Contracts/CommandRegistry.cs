@@ -268,6 +268,22 @@ namespace AutodeskNativeAgent.Core.Contracts
                 argumentSchema: JsonValue.Null,
                 supportedInPreview: false));
 
+            registry.Register(new OperationDescriptor(
+                "level.create",
+                creates: 1,
+                modifies: 0,
+                deletes: 0,
+                summary: "Creates a new level at the given elevation with an optional name.",
+                argumentSchema: JsonValue.Null));
+
+            registry.Register(new OperationDescriptor(
+                "grid.create",
+                creates: 1,
+                modifies: 0,
+                deletes: 0,
+                summary: "Creates a straight grid line between two XY points with an optional name.",
+                argumentSchema: JsonValue.Null));
+
             return registry;
         }
 

@@ -342,6 +342,12 @@ namespace AutodeskNativeAgent.Revit2024.Execution
                 case "window.insert":
                     return WindowInsertOperation.Execute(document, operation, plan, results, ProjectPolicy.FromJson(JsonValue.EmptyObject()));
 
+                case "level.create":
+                    return LevelCreateOperation.Execute(document, operation, plan, results);
+
+                case "grid.create":
+                    return GridCreateOperation.Execute(document, operation, plan, results);
+
                 case "room.create":
                     return RoomCreateOperation.Execute(document, operation, plan, results);
 
