@@ -1,4 +1,4 @@
-﻿# install-revit2024.ps1 — Installs the Revit 2024 add-in to the user's Addins folder
+# install-revit2024.ps1 — Installs the Revit 2024 add-in to the user's Addins folder
 [CmdletBinding()]
 param(
   [string]$Configuration = "Release"
@@ -7,6 +7,19 @@ param(
 $ErrorActionPreference = "Stop"
 $root = Resolve-Path "$PSScriptRoot\.."
 $addinSource = "$root\apps\revit-2024-addin\bin\$Configuration\net48"
+$addinSourceX64 = "$root\apps\revit-2024-addin\bin\x64\$Configuration\net48"
+# The add-in sets PlatformTarget=x64; building the SOLUTION lands output in
+# bin\x64\Release\net48, while a project-only build lands in bin\Release\net48.
+# Prefer whichever is NEWER so a stale DLL is never deployed.
+if ((Test-Path "$addinSourceX64\AutodeskNativeAgent.Revit2024.dll") -and
+    (Test-Path "$addinSource\AutodeskNativeAgent.Revit2024.dll")) {
+    $mStd = (Get-Item "$addinSource\AutodeskNativeAgent.Revit2024.dll").LastWriteTime
+    $mX64 = (Get-Item "$addinSourceX64\AutodeskNativeAgent.Revit2024.dll").LastWriteTime
+    if ($mX64 -gt $mStd) { $addinSource = $addinSourceX64 }
+}
+elseif (Test-Path "$addinSourceX64\AutodeskNativeAgent.Revit2024.dll") {
+    $addinSource = $addinSourceX64
+}
 $addinTarget = "$env:APPDATA\Autodesk\Revit\Addins\2024"
 
 Write-Host "=== Installing Revit 2024 Add-in ===" -ForegroundColor Cyan

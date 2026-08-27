@@ -16,8 +16,20 @@ Write-Host "=== Packaging Release v$Version ===" -ForegroundColor Cyan
 if (Test-Path $staging) { Remove-Item $staging -Recurse -Force }
 New-Item -ItemType Directory -Path $staging -Force | Out-Null
 
-# Copy Revit add-in
+# Copy Revit add-in. The solution build places output under bin\x64\Release\net48
+# (add-in sets PlatformTarget=x64); a project-only build lands in bin\Release\net48.
+# Prefer whichever build output is NEWER so we never deploy a stale DLL.
 $addinBin = "$root\apps\revit-2024-addin\bin\$Configuration\net48"
+$addinBinX64 = "$root\apps\revit-2024-addin\bin\x64\$Configuration\net48"
+if ((Test-Path "$addinBinX64\AutodeskNativeAgent.Revit2024.dll") -and
+    (Test-Path "$addinBin\AutodeskNativeAgent.Revit2024.dll")) {
+    $m1 = (Get-Item "$addinBin\AutodeskNativeAgent.Revit2024.dll").LastWriteTime
+    $m2 = (Get-Item "$addinBinX64\AutodeskNativeAgent.Revit2024.dll").LastWriteTime
+    if ($m2 -gt $m1) { $addinBin = $addinBinX64 }
+}
+elseif (Test-Path "$addinBinX64\AutodeskNativeAgent.Revit2024.dll") {
+    $addinBin = $addinBinX64
+}
 $addinDest = "$staging\revit-2024-addin"
 New-Item -ItemType Directory -Path $addinDest -Force | Out-Null
 Copy-Item "$addinBin\AutodeskNativeAgent.Revit2024.dll" $addinDest -ErrorAction SilentlyContinue
