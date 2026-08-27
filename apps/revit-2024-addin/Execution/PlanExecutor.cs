@@ -416,6 +416,27 @@ namespace AutodeskNativeAgent.Revit2024.Execution
 
         // --- Assertion evaluation ---
 
+        /// <summary>
+        /// Builds the element-reference selector for an assertion or operation target.
+        /// A target that starts with "$result." is an operation-result reference; anything
+        /// else is treated as a bare uniqueId. The returned object only carries the key
+        /// that applies, so we never pass null to JsonValue.String (which throws).
+        /// </summary>
+        private static JsonValue BuildElementSelector(string reference)
+        {
+            var members = new Dictionary<string, JsonValue>(StringComparer.Ordinal);
+            if (!string.IsNullOrEmpty(reference) && reference.StartsWith("$result.", StringComparison.Ordinal))
+            {
+                members["viaOperationResult"] = JsonValue.String(reference);
+            }
+            else if (!string.IsNullOrEmpty(reference))
+            {
+                members["uniqueId"] = JsonValue.String(reference);
+            }
+
+            return JsonValue.Object(members);
+        }
+
         private AssertionResult EvaluateAssertion(
             Document document,
             Assertion assertion,
@@ -426,11 +447,7 @@ namespace AutodeskNativeAgent.Revit2024.Execution
             string resolveError = null;
             try
             {
-                target = ElementResolver.Resolve(document, JsonValue.Object(new Dictionary<string, JsonValue>(StringComparer.Ordinal)
-                {
-                    ["viaOperationResult"] = JsonValue.String(assertion.Target.StartsWith("$result.") ? assertion.Target : null),
-                    ["uniqueId"] = JsonValue.String(assertion.Target.StartsWith("$result.") ? null : assertion.Target)
-                }), results);
+                target = ElementResolver.Resolve(document, BuildElementSelector(assertion.Target), results);
             }
             catch (Exception ex)
             {
@@ -517,11 +534,7 @@ namespace AutodeskNativeAgent.Revit2024.Execution
                 case AssertionKind.HostEquals:
                 {
                     // Resolve the expected host reference (e.g. "$result.wall-001").
-                    JsonValue hostSelector = JsonValue.Object(new Dictionary<string, JsonValue>(StringComparer.Ordinal)
-                    {
-                        ["viaOperationResult"] = JsonValue.String(assertion.Host.StartsWith("$result.") ? assertion.Host : null),
-                        ["uniqueId"] = JsonValue.String(assertion.Host.StartsWith("$result.") ? null : assertion.Host)
-                    });
+                    JsonValue hostSelector = BuildElementSelector(assertion.Host);
 
                     Element expectedHost = null;
                     try
