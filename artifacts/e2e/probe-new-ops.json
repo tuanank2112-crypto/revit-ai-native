@@ -1,0 +1,135 @@
+{
+  "schemaVersion": "1.0",
+  "requestId": "e2e-probe-new-ops-0001",
+  "description": "E2E probe for the 8 new Tier-1 ops (family.load skipped - needs .rfa). Creates one probe element per op with assertions; run cleanup-probe.json afterwards.",
+  "document": { "strategy": "active_document" },
+  "units": "mm",
+  "coordinateSystem": "project",
+  "executionMode": "commit",
+  "operations": [
+    {
+      "id": "col-001",
+      "op": "column.create",
+      "args": {
+        "point": { "x": 1000, "y": 1000, "z": 0 },
+        "structural": "column",
+        "category": "column",
+        "type": { "strategy": "project_default_or_fail" },
+        "level": { "strategy": "active_view_level" },
+        "name": "E2E_Probe_Column"
+      },
+      "assertions": [
+        { "kind": "element_exists", "target": "$result.col-001", "expect": true, "tolerance": 0 }
+      ]
+    },
+    {
+      "id": "fam-001",
+      "op": "family.instance.create",
+      "args": {
+        "point": { "x": 2000, "y": 1000, "z": 0 },
+        "structural": "column",
+        "category": "column",
+        "type": { "strategy": "project_default_or_fail" },
+        "level": { "strategy": "active_view_level" },
+        "name": "E2E_Probe_Family"
+      },
+      "assertions": [
+        { "kind": "element_exists", "target": "$result.fam-001", "expect": true, "tolerance": 0 }
+      ]
+    },
+    {
+      "id": "beam-001",
+      "op": "beam.create",
+      "args": {
+        "start": { "x": 0, "y": 3000, "z": 0 },
+        "end": { "x": 4000, "y": 3000, "z": 0 },
+        "depth": 300,
+        "width": 200,
+        "baseOffset": 0,
+        "level": { "strategy": "active_view_level" },
+        "type": { "strategy": "project_default_or_fail" },
+        "name": "E2E_Probe_Beam"
+      },
+      "assertions": [
+        { "kind": "element_exists", "target": "$result.beam-001", "expect": true, "tolerance": 0 },
+        { "kind": "length", "target": "$result.beam-001", "equals": 4000, "unit": "mm", "tolerance": 2 }
+      ]
+    },
+    {
+      "id": "slab-001",
+      "op": "slab.create",
+      "args": {
+        "level": { "strategy": "active_view_level" },
+        "outline": {
+          "points": [
+            { "x": 5000, "y": 4000 },
+            { "x": 8000, "y": 4000 },
+            { "x": 8000, "y": 6000 },
+            { "x": 5000, "y": 6000 }
+          ]
+        },
+        "name": "E2E_Probe_Slab"
+      },
+      "assertions": [
+        { "kind": "element_exists", "target": "$result.slab-001", "expect": true, "tolerance": 0 }
+      ]
+    },
+    {
+      "id": "roof-001",
+      "op": "roof.create",
+      "args": {
+        "level": { "strategy": "active_view_level" },
+        "outline": {
+          "points": [
+            { "x": 5000, "y": 7000 },
+            { "x": 9000, "y": 7000 },
+            { "x": 9000, "y": 10000 },
+            { "x": 5000, "y": 10000 }
+          ]
+        },
+        "overhang": 0,
+        "name": "E2E_Probe_Roof"
+      },
+      "assertions": [
+        { "kind": "element_exists", "target": "$result.roof-001", "expect": true, "tolerance": 0 }
+      ]
+    },
+    {
+      "id": "sec-001",
+      "op": "view.create_section",
+      "args": {
+        "name": "E2E_Probe_Section",
+        "viewType": "section",
+        "box": {
+          "min": { "x": -1000, "y": -1000, "z": -1000 },
+          "max": { "x": 12000, "y": 12000, "z": 5000 }
+        }
+      },
+      "assertions": [
+        { "kind": "element_exists", "target": "$result.sec-001", "expect": true, "tolerance": 0 }
+      ]
+    },
+    {
+      "id": "elev-001",
+      "op": "view.create_elevation",
+      "args": {
+        "name": "E2E_Probe_Elevation",
+        "viewType": "elevation",
+        "box": {
+          "min": { "x": -1000, "y": -1000, "z": -1000 },
+          "max": { "x": 12000, "y": 12000, "z": 5000 }
+        }
+      },
+      "assertions": [
+        { "kind": "element_exists", "target": "$result.elev-001", "expect": true, "tolerance": 0 }
+      ]
+    }
+  ],
+  "safety": {
+    "requireUserConfirmation": true,
+    "createBackupBeforeCommit": false,
+    "maximumElementsAffected": 20,
+    "rollbackOnWarning": false,
+    "rollbackOnValidationFailure": true
+  }
+}
