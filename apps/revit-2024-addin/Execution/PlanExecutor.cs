@@ -378,6 +378,9 @@ namespace AutodeskNativeAgent.Revit2024.Execution
                 case "export.pdf":
                     return ExportPdfOperation.Execute(document, operation, plan, results);
 
+                case "family.load":
+                    return FamilyLoadOperation.Execute(document, operation, plan, results);
+
                 case "family.instance.create":
                     return FamilyInstanceCreateOperation.Execute(document, operation, plan, results, ProjectPolicy.FromJson(JsonValue.EmptyObject()));
 

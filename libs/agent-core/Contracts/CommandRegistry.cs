@@ -285,6 +285,14 @@ namespace AutodeskNativeAgent.Core.Contracts
                 argumentSchema: JsonValue.Null));
 
             registry.Register(new OperationDescriptor(
+                "family.load",
+                creates: 0,
+                modifies: 0,
+                deletes: 0,
+                summary: "Loads a .rfa/.fam family file into the document (Document.LoadFamily / LoadFamilySymbol) so its symbols can be placed.",
+                argumentSchema: JsonValue.Null));
+
+            registry.Register(new OperationDescriptor(
                 "family.instance.create",
                 creates: 1,
                 modifies: 0,
