@@ -8,5 +8,7 @@
     <VendorId>ANTG</VendorId>
     <VendorDescription>Autodesk Native Agent Project</VendorDescription>
     <AddInId>58bfd92e-8c28-421d-87d1-da5d3de4829d</AddInId>
+    <StartupIds>14</StartupIds>
+    <LoadingPolicy>AlwaysLoad</LoadingPolicy>
   </AddIn>
 </RevitAddIns>
