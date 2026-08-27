@@ -71,7 +71,7 @@ namespace AutodeskNativeAgent.Revit2024.Execution
                         return PipeProtocol.Ok(requestId, method, BuildHelloData());
 
                     case ProtocolCatalog.Status:
-                        return PipeProtocol.Ok(requestId, method, BuildStatusData());
+                        return BuildStatusData(requestId);
 
                     case ProtocolCatalog.Capabilities:
                         return PipeProtocol.Ok(requestId, method, BuildCapabilitiesData());
@@ -123,6 +123,41 @@ namespace AutodeskNativeAgent.Revit2024.Execution
                 ["addInVersion"] = JsonValue.String("1.0.0"),
                 ["capabilities"] = BuildCapabilitiesData()
             });
+        }
+
+        private JsonValue BuildStatusData(string requestId)
+        {
+            // The pipe handler thread cannot touch the Revit API; marshal to the main
+            // thread so the active document title/path are read live, not from the
+            // cache that only plan execution refreshes.
+            var done = new System.Threading.AutoResetEvent(false);
+            JsonValue[] resultHolder = new JsonValue[1];
+
+            _dispatcher.Enqueue(new MainThreadWorkItem((app, doc) =>
+            {
+                try
+                {
+                    _activeDocumentTitle = doc != null ? doc.Title ?? string.Empty : string.Empty;
+                    _activeDocumentPath = doc != null ? doc.PathName ?? string.Empty : string.Empty;
+                    resultHolder[0] = PipeProtocol.Ok(
+                        requestId,
+                        ProtocolCatalog.Status,
+                        BuildStatusData());
+                }
+                catch (Exception ex)
+                {
+                    resultHolder[0] = PipeProtocol.Fail(requestId, ProtocolCatalog.Status,
+                        new AgentError(ErrorCodes.InternalError, "Status failed: " + ex.Message, false));
+                }
+                finally
+                {
+                    done.Set();
+                }
+            }, "Status"));
+
+            done.WaitOne(TimeSpan.FromSeconds(10));
+            return resultHolder[0] ?? PipeProtocol.Fail(requestId, ProtocolCatalog.Status,
+                new AgentError(ErrorCodes.RequestTimeout, "Status timed out.", true));
         }
 
         private JsonValue BuildStatusData()
@@ -257,7 +292,14 @@ namespace AutodeskNativeAgent.Revit2024.Execution
 
             try
             {
-                job.Transition(JobStatus.Validating);
+                // First run: WaitingForRevit -> Validating. Resume after the user
+                // accepted a confirmation: the job is in AwaitingConfirmation and the
+                // state machine only allows AwaitingConfirmation -> Executing, so the
+                // Validating step must be skipped on that path.
+                if (job.Status == JobStatus.WaitingForRevit)
+                {
+                    job.Transition(JobStatus.Validating);
+                }
 
                 var executor = new PlanExecutor();
                 if (isPreview)
