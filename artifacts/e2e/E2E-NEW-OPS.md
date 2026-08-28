@@ -12,6 +12,17 @@
    Nếu chỉ 20 op → Revit chưa nạp bản mới (chưa restart / chưa install).
 2. `revit_inspect_document` — document hoạt động, có Level cho `active_view_level`.
 
+> [!WARNING]
+> `artifacts/e2e/E2E-Test.rvt` **KHÔNG mở được** — đã kiểm chứng: SHA256 của nó trùng 100%
+> với `Default_M_ENU.rte` (template). Revit từ chối mở template bị đổi đuôi `.rvt`. **Đừng dùng file này** — nó đã bị xoá khỏi repo.
+
+## Bước 0.5 — Chuẩn bị document hợp lệ (nếu chưa có)
+
+Trong Revit: **File → New → Project** → chọn template
+**`Default-Multi-Discipline_Metric`** (nhóm *English*, metric) → OK. Template này có sẵn:
+cột (OST_Columns), dầm kết cấu, sàn/mái mặc định → probe không bị `TYPE_NOT_FOUND`.
+(Không dùng `Default_M_ENU` — thiếu family kết cấu.)
+
 ## Bước 1 — Chạy probe plan
 
 Plan: [probe-new-ops.json](probe-new-ops.json) — tạo 1 phần tử probe cho 7 op (family.load
@@ -51,3 +62,4 @@ không probe được vì cần path .rfa thật):
 
 - `family.load`: test riêng khi có file `.rfa` (vd cột/dầm/thang) → args `{ "path": "C:\\...\\cot.rfa", "symbolName": "Cột 300x300" }`.
 - `stairs.create` **không build** (Stairs.Create ABSENT) — nếu cần thang, dùng family instance thang.
+- Sự cố đã xử lý (28/08): `E2E-Test.rvt` = bản copy của template `Default_M_ENU.rte` (hash trùng) → xoá khỏi repo; E2E dùng project mới từ template Multi-Discipline Metric.

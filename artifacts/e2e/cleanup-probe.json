@@ -1,24 +1,75 @@
 {
   "schemaVersion": "1.0",
-  "requestId": "e2e-cleanup-new-ops-0001",
-  "description": "Delete the 7 E2E probe elements created by probe-new-ops.json.",
-  "document": { "strategy": "active_document" },
+  "requestId": "cleanup-probe-0001",
+  "description": "Remove the 7 elements created by the E2E new-ops probe.",
+  "document": {
+    "strategy": "active_document"
+  },
   "units": "mm",
   "coordinateSystem": "project",
   "executionMode": "commit",
   "operations": [
-    { "id": "del-col",  "op": "element.delete", "args": { "target": { "uniqueId": "PASTE_UNIQUEID_COL" } } },
-    { "id": "del-fam",  "op": "element.delete", "args": { "target": { "uniqueId": "PASTE_UNIQUEID_FAM" } } },
-    { "id": "del-beam", "op": "element.delete", "args": { "target": { "uniqueId": "PASTE_UNIQUEID_BEAM" } } },
-    { "id": "del-slab", "op": "element.delete", "args": { "target": { "uniqueId": "PASTE_UNIQUEID_SLAB" } } },
-    { "id": "del-roof", "op": "element.delete", "args": { "target": { "uniqueId": "PASTE_UNIQUEID_ROOF" } } },
-    { "id": "del-sec",  "op": "element.delete", "args": { "target": { "uniqueId": "PASTE_UNIQUEID_SEC" } } },
-    { "id": "del-elev", "op": "element.delete", "args": { "target": { "uniqueId": "PASTE_UNIQUEID_ELEV" } } }
+    {
+      "id": "del-col-001",
+      "op": "element.delete",
+      "args": { "target": { "uniqueId": "92857b09-67b8-4871-82d4-d510c4e83be3-0018526b" } },
+      "assertions": [
+        { "kind": "element_exists", "target": { "uniqueId": "92857b09-67b8-4871-82d4-d510c4e83be3-0018526b" }, "expect": false, "tolerance": 0 }
+      ]
+    },
+    {
+      "id": "del-fam-001",
+      "op": "element.delete",
+      "args": { "target": { "uniqueId": "92857b09-67b8-4871-82d4-d510c4e83be3-0018526c" } },
+      "assertions": [
+        { "kind": "element_exists", "target": { "uniqueId": "92857b09-67b8-4871-82d4-d510c4e83be3-0018526c" }, "expect": false, "tolerance": 0 }
+      ]
+    },
+    {
+      "id": "del-beam-001",
+      "op": "element.delete",
+      "args": { "target": { "uniqueId": "92857b09-67b8-4871-82d4-d510c4e83be3-0018526d" } },
+      "assertions": [
+        { "kind": "element_exists", "target": { "uniqueId": "92857b09-67b8-4871-82d4-d510c4e83be3-0018526d" }, "expect": false, "tolerance": 0 }
+      ]
+    },
+    {
+      "id": "del-slab-001",
+      "op": "element.delete",
+      "args": { "target": { "uniqueId": "92857b09-67b8-4871-82d4-d510c4e83be3-00185270" } },
+      "assertions": [
+        { "kind": "element_exists", "target": { "uniqueId": "92857b09-67b8-4871-82d4-d510c4e83be3-00185270" }, "expect": false, "tolerance": 0 }
+      ]
+    },
+    {
+      "id": "del-roof-001",
+      "op": "element.delete",
+      "args": { "target": { "uniqueId": "92857b09-67b8-4871-82d4-d510c4e83be3-00185277" } },
+      "assertions": [
+        { "kind": "element_exists", "target": { "uniqueId": "92857b09-67b8-4871-82d4-d510c4e83be3-00185277" }, "expect": false, "tolerance": 0 }
+      ]
+    },
+    {
+      "id": "del-sec-001",
+      "op": "element.delete",
+      "args": { "target": { "uniqueId": "92857b09-67b8-4871-82d4-d510c4e83be3-00185288" } },
+      "assertions": [
+        { "kind": "element_exists", "target": { "uniqueId": "92857b09-67b8-4871-82d4-d510c4e83be3-00185288" }, "expect": false, "tolerance": 0 }
+      ]
+    },
+    {
+      "id": "del-elev-001",
+      "op": "element.delete",
+      "args": { "target": { "uniqueId": "92857b09-67b8-4871-82d4-d510c4e83be3-00185292" } },
+      "assertions": [
+        { "kind": "element_exists", "target": { "uniqueId": "92857b09-67b8-4871-82d4-d510c4e83be3-00185292" }, "expect": false, "tolerance": 0 }
+      ]
+    }
   ],
   "safety": {
     "requireUserConfirmation": true,
     "createBackupBeforeCommit": false,
-    "maximumElementsAffected": 7,
+    "maximumElementsAffected": 10,
     "rollbackOnWarning": false,
     "rollbackOnValidationFailure": true
   }

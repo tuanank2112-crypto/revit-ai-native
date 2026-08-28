@@ -13,10 +13,14 @@ namespace AutodeskNativeAgent.Revit2024.Execution.Operations
     /// Used for columns, structural members and other generic elements that have no dedicated
     /// native creation API in this Revit build (Beam/Column classes are absent).
     ///
-    /// NOTE (verified by compile probe #13): this Revit 2024 build exposes only the
-    /// 3-arg <c>NewFamilyInstance(XYZ, FamilySymbol, StructuralType)</c> overload — there is
-    /// no overload accepting a Level — and the <c>StructuralType</c> enum has exactly three
-    /// values: <c>NonStructural</c>, <c>Column</c>, <c>Beam</c> (no "Structural" member).
+    /// NOTE (verified by reflection on the installed RevitAPI.dll, 2026-08-27):
+    /// <c>Document.Create</c> exposes 12 <c>NewFamilyInstance</c> overloads, including both
+    /// <c>(XYZ, FamilySymbol, StructuralType)</c> and
+    /// <c>(XYZ, FamilySymbol, Level, StructuralType)</c>. Level-based families (structural
+    /// columns, most MEP fixtures) REQUIRE the Level-aware overload — the 3-arg form throws
+    /// "Instance of a level-based family cannot be created without a valid reference level."
+    /// The <c>StructuralType</c> enum has exactly three values: <c>NonStructural</c>,
+    /// <c>Column</c>, <c>Beam</c> (no "Structural" member).
     /// Rotation is not supported (no public rotation API in this build); a non-zero
     /// <c>rotation</c> arg is accepted for schema stability and surfaced as a warning.
     /// </summary>
@@ -37,8 +41,8 @@ namespace AutodeskNativeAgent.Revit2024.Execution.Operations
             string categoryKey = args["category"].AsString("generic");
             StructuralType structuralType = MapStructuralType(args["structural"]);
 
-            // The level is resolved for reporting/verification only; the creation overload in
-            // this build does not take a level (placement is a pure XYZ in project coordinates).
+            // The level is resolved so we can use the Level-aware overload: level-based
+            // families (structural columns) are rejected by the 3-arg overload.
             Level level = null;
             if (args.Has("level") && !args["level"].IsNull)
             {
@@ -63,7 +67,9 @@ namespace AutodeskNativeAgent.Revit2024.Execution.Operations
                 document.Regenerate();
             }
 
-            FamilyInstance instance = document.Create.NewFamilyInstance(placement, symbol, structuralType);
+            FamilyInstance instance = level != null
+                ? document.Create.NewFamilyInstance(placement, symbol, level, structuralType)
+                : document.Create.NewFamilyInstance(placement, symbol, structuralType);
             if (instance == null)
             {
                 throw new AgentException(ErrorCodes.ExecutionFailed, "family.instance.create produced no instance.", true);
