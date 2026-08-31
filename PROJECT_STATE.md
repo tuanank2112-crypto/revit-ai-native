@@ -1,6 +1,6 @@
 # PROJECT_STATE — Autodesk Native Agent Runtime
 
-> Cập nhật lần cuối: 2026-08-11 · Hidden format: đây là trạng thái thực tế của project, không phải template.
+> Cập nhật lần cuối: 2026-08-31 · Hidden format: đây là trạng thái thực tế của project, không phải template.
 
 ## Mục tiêu của project
 
@@ -73,9 +73,17 @@ apps/revit-2024-addin (C# net48, IExternalApplication)
 9. Scripts PowerShell phải có **UTF-8 BOM** (PS 5.1 đọc sai em dash `—` nếu không BOM).
 10. `ElementId.IntegerValue` deprecated Revit 2024 → `.Value` (long); riêng `WorksetId` CHỈ có `IntegerValue`.
 
-## Trạng thái hiện tại (2026-08-28, sau phase 2 — 8 op mới Tier-1)
+## Trạng thái hiện tại (2026-08-31, sau phase 2 — 8 op mới Tier-1 + schema validation)
 
-- ✅ **Build solution 0 error / 0 warning** (Release). **59/59 tests pass**. MCP `npm run build` OK.
+- ✅ **Build solution 0 error / 0 warning** (Release). **69/69 tests pass** (59 cũ + 10 mới). MCP `npm run build` OK.
+- ✅ **JSON Schema validation cho 10 op còn thiếu schema** (2026-08-31):
+  - `level.create`, `grid.create`, `family.load`, `family.instance.create`, `column.create`,
+    `beam.create`, `slab.create`, `roof.create`, `view.create_section`, `view.create_elevation`.
+  - Schema files mới trong `libs/contracts/schemas/operations/`, register trong `CommandRegistry`
+    (trước đây `argumentSchema: JsonValue.Null` → KHÔNG validate args).
+  - MCP tools `revit_validate_plan` / `revit_preview_plan` / `revit_commit_plan` có `inputSchema`
+    cấu trúc (schemaVersion/units/coordinateSystem/executionMode/operations/safety) thay vì `{}` trống.
+  - 10 unit test mới trong `SchemaTests.cs` (valid + missing-required/minItems/const).
 - ✅ **8 op mới Tier-1 đã implement + register + dispatch (tổng 28 ops)**:
   - `family.load` (Document.LoadFamilySymbol — `LoadFamily(String,…)` ABSENT)
   - `family.instance.create` (3-arg `NewFamilyInstance`; `StructuralType` chỉ có NonStructural/Column/Beam)

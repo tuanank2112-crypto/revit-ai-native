@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://autodesk-native-agent.local/schemas/operations/level.create.schema.json",
+  "title": "level.create arguments",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["elevation"],
+  "properties": {
+    "elevation": {
+      "type": "number",
+      "description": "Elevation of the new level in plan units."
+    },
+    "name": {
+      "type": "string",
+      "description": "Optional name for the new level. Defaults to auto-generated name if omitted."
+    }
+  }
+}

@@ -274,7 +274,7 @@ namespace AutodeskNativeAgent.Core.Contracts
                 modifies: 0,
                 deletes: 0,
                 summary: "Creates a new level at the given elevation with an optional name.",
-                argumentSchema: JsonValue.Null));
+                argumentSchema: SchemaCatalog.LoadOperationSchema("level.create")));
 
             registry.Register(new OperationDescriptor(
                 "grid.create",
@@ -282,7 +282,7 @@ namespace AutodeskNativeAgent.Core.Contracts
                 modifies: 0,
                 deletes: 0,
                 summary: "Creates a straight grid line between two XY points with an optional name.",
-                argumentSchema: JsonValue.Null));
+                argumentSchema: SchemaCatalog.LoadOperationSchema("grid.create")));
 
             registry.Register(new OperationDescriptor(
                 "family.load",
@@ -290,7 +290,7 @@ namespace AutodeskNativeAgent.Core.Contracts
                 modifies: 0,
                 deletes: 0,
                 summary: "Loads a .rfa/.fam family file into the document (Document.LoadFamily / LoadFamilySymbol) so its symbols can be placed.",
-                argumentSchema: JsonValue.Null));
+                argumentSchema: SchemaCatalog.LoadOperationSchema("family.load")));
 
             registry.Register(new OperationDescriptor(
                 "family.instance.create",
@@ -298,7 +298,7 @@ namespace AutodeskNativeAgent.Core.Contracts
                 modifies: 0,
                 deletes: 0,
                 summary: "Places a non-hosted family instance at a point (column/beam/generic); structural flag maps to StructuralType.",
-                argumentSchema: JsonValue.Null));
+                argumentSchema: SchemaCatalog.LoadOperationSchema("family.instance.create")));
 
             registry.Register(new OperationDescriptor(
                 "column.create",
@@ -306,7 +306,7 @@ namespace AutodeskNativeAgent.Core.Contracts
                 modifies: 0,
                 deletes: 0,
                 summary: "Places a structural column family instance at a point (shortcut of family.instance.create, category=column).",
-                argumentSchema: JsonValue.Null));
+                argumentSchema: SchemaCatalog.LoadOperationSchema("column.create")));
 
             registry.Register(new OperationDescriptor(
                 "beam.create",
@@ -314,7 +314,7 @@ namespace AutodeskNativeAgent.Core.Contracts
                 modifies: 0,
                 deletes: 0,
                 summary: "Creates a structural beam as a structural wall between two points with the given depth (native Beam class absent).",
-                argumentSchema: JsonValue.Null));
+                argumentSchema: SchemaCatalog.LoadOperationSchema("beam.create")));
 
             registry.Register(new OperationDescriptor(
                 "slab.create",
@@ -322,7 +322,7 @@ namespace AutodeskNativeAgent.Core.Contracts
                 modifies: 0,
                 deletes: 0,
                 summary: "Creates a floor slab from a closed outline polygon on a level (Ceiling.Create as floor; native Slab absent).",
-                argumentSchema: JsonValue.Null));
+                argumentSchema: SchemaCatalog.LoadOperationSchema("slab.create")));
 
             registry.Register(new OperationDescriptor(
                 "roof.create",
@@ -330,7 +330,7 @@ namespace AutodeskNativeAgent.Core.Contracts
                 modifies: 0,
                 deletes: 0,
                 summary: "Creates a footprint roof from a closed outline polygon on a level, with optional per-curve overhang.",
-                argumentSchema: JsonValue.Null));
+                argumentSchema: SchemaCatalog.LoadOperationSchema("roof.create")));
 
             registry.Register(new OperationDescriptor(
                 "view.create_section",
@@ -338,7 +338,7 @@ namespace AutodeskNativeAgent.Core.Contracts
                 modifies: 0,
                 deletes: 0,
                 summary: "Creates a section view through a rectangular box (min/max corners).",
-                argumentSchema: JsonValue.Null));
+                argumentSchema: SchemaCatalog.LoadOperationSchema("view.create_section")));
 
             registry.Register(new OperationDescriptor(
                 "view.create_elevation",
@@ -346,7 +346,7 @@ namespace AutodeskNativeAgent.Core.Contracts
                 modifies: 0,
                 deletes: 0,
                 summary: "Creates an elevation view (section box oriented vertically, viewType=elevation).",
-                argumentSchema: JsonValue.Null));
+                argumentSchema: SchemaCatalog.LoadOperationSchema("view.create_elevation")));
 
             return registry;
         }

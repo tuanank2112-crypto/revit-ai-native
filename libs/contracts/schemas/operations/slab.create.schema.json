@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://autodesk-native-agent.local/schemas/operations/slab.create.schema.json",
+  "title": "slab.create arguments",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["outline", "level"],
+  "properties": {
+    "outline": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["points"],
+      "properties": {
+        "points": {
+          "type": "array",
+          "minItems": 3,
+          "items": { "$ref": "#/$defs/point2d" },
+          "description": "Closed polygon outline (minimum 3 points). The last point connects back to the first."
+        }
+      }
+    },
+    "level": { "$ref": "wall.create.schema.json#/$defs/levelSelector" },
+    "name": {
+      "type": "string",
+      "description": "Optional slab name."
+    }
+  },
+  "$defs": {
+    "point2d": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["x", "y"],
+      "properties": {
+        "x": { "type": "number" },
+        "y": { "type": "number" }
+      }
+    }
+  }
+}

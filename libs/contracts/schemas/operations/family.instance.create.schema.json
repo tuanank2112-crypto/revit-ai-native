@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://autodesk-native-agent.local/schemas/operations/family.instance.create.schema.json",
+  "title": "family.instance.create arguments",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["point", "type"],
+  "properties": {
+    "point": { "$ref": "#/$defs/point3d" },
+    "type": { "$ref": "wall.create.schema.json#/$defs/typeSelector" },
+    "category": {
+      "type": "string",
+      "enum": ["generic", "column", "beam", "casework", "furniture", "other"],
+      "default": "generic",
+      "description": "Revit category used to narrow the family symbol search."
+    },
+    "level": { "$ref": "wall.create.schema.json#/$defs/levelSelector" },
+    "structural": {
+      "oneOf": [
+        { "type": "boolean" },
+        { "type": "string", "enum": ["column", "beam", "nonStructural", "none", "false", "structural"] }
+      ],
+      "default": "structural",
+      "description": "Maps to StructuralType: boolean true=Column, 'beam'=Beam, 'nonStructural'/'none'/'false'=NonStructural."
+    },
+    "name": {
+      "type": "string",
+      "description": "Optional instance name."
+    },
+    "rotation": {
+      "type": "number",
+      "default": 0,
+      "description": "Not supported in this build; a non-zero value is surfaced as a warning."
+    }
+  },
+  "$defs": {
+    "point3d": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["x", "y"],
+      "properties": {
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "z": { "type": "number", "default": 0 }
+      }
+    }
+  }
+}

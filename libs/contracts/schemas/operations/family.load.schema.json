@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://autodesk-native-agent.local/schemas/operations/family.load.schema.json",
+  "title": "family.load arguments",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["path"],
+  "properties": {
+    "path": {
+      "type": "string",
+      "description": "Full path to the .rfa/.fam family file to load."
+    },
+    "symbolName": {
+      "type": "string",
+      "description": "Optional family symbol name. Defaults to the file base name when omitted."
+    }
+  }
+}

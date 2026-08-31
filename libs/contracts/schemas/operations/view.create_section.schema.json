@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://autodesk-native-agent.local/schemas/operations/view.create_section.schema.json",
+  "title": "view.create_section arguments",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["box"],
+  "properties": {
+    "box": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["min", "max"],
+      "properties": {
+        "min": { "$ref": "#/$defs/point3d" },
+        "max": { "$ref": "#/$defs/point3d" }
+      }
+    },
+    "viewType": {
+      "type": "string",
+      "enum": ["section", "elevation"],
+      "default": "section",
+      "description": "'section' creates a ViewSection; 'elevation' creates an ElevationMarker+direction."
+    },
+    "name": {
+      "type": "string",
+      "description": "Optional view name. Auto-generated when omitted."
+    },
+    "scale": {
+      "type": "number",
+      "default": 100,
+      "description": "View scale (1:scale). Only used for elevation views."
+    },
+    "direction": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 3,
+      "default": 0,
+      "description": "Elevation direction index 0-3. Only used for elevation views."
+    }
+  },
+  "$defs": {
+    "point3d": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["x", "y"],
+      "properties": {
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "z": { "type": "number", "default": 0 }
+      }
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://autodesk-native-agent.local/schemas/operations/grid.create.schema.json",
+  "title": "grid.create arguments",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["start", "end"],
+  "properties": {
+    "start": { "$ref": "#/$defs/point2d" },
+    "end": { "$ref": "#/$defs/point2d" },
+    "name": {
+      "type": "string",
+      "description": "Optional grid bubble name (e.g. \"1\", \"A\")."
+    }
+  },
+  "$defs": {
+    "point2d": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["x", "y"],
+      "properties": {
+        "x": { "type": "number" },
+        "y": { "type": "number" }
+      }
+    }
+  }
+}

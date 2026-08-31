@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://autodesk-native-agent.local/schemas/operations/roof.create.schema.json",
+  "title": "roof.create arguments",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["outline", "level"],
+  "properties": {
+    "outline": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["points"],
+      "properties": {
+        "points": {
+          "type": "array",
+          "minItems": 3,
+          "items": { "$ref": "#/$defs/point2d" },
+          "description": "Closed polygon footprint outline (minimum 3 points)."
+        }
+      }
+    },
+    "level": { "$ref": "wall.create.schema.json#/$defs/levelSelector" },
+    "overhang": {
+      "type": "number",
+      "default": 0,
+      "description": "Per-curve overhang distance in plan units. Applied to all footprint curves."
+    },
+    "name": {
+      "type": "string",
+      "description": "Optional roof name."
+    }
+  },
+  "$defs": {
+    "point2d": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["x", "y"],
+      "properties": {
+        "x": { "type": "number" },
+        "y": { "type": "number" }
+      }
+    }
+  }
+}

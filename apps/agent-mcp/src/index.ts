@@ -72,17 +72,77 @@ const tools = [
   {
     name: 'revit_validate_plan',
     description: 'Validates a plan structurally and against the command allowlist. Does not execute.',
-    inputSchema: { type: 'object', required: ['plan'], properties: { plan: { type: 'object', description: 'The agent plan to validate' } } }
+    inputSchema: {
+      type: 'object',
+      required: ['plan'],
+      properties: {
+        plan: {
+          type: 'object',
+          description: 'The agent plan. Must have: schemaVersion, requestId, description, document, units, coordinateSystem, executionMode, operations[], safety{}.',
+          properties: {
+            schemaVersion: { type: 'string', const: '1.0' },
+            requestId: { type: 'string' },
+            description: { type: 'string' },
+            document: { type: 'object' },
+            units: { type: 'string', enum: ['mm', 'cm', 'm', 'inch', 'ft'] },
+            coordinateSystem: { type: 'string', enum: ['project', 'internal'] },
+            executionMode: { type: 'string', enum: ['preview', 'validate', 'commit'] },
+            operations: { type: 'array', items: { type: 'object' } },
+            safety: { type: 'object' }
+          }
+        }
+      }
+    }
   },
   {
     name: 'revit_preview_plan',
     description: 'Dry-runs a plan: resolution only, never mutates the model. Returns a preview report with resolved types/levels.',
-    inputSchema: { type: 'object', required: ['plan'], properties: { plan: { type: 'object', description: 'The agent plan to preview' } } }
+    inputSchema: {
+      type: 'object',
+      required: ['plan'],
+      properties: {
+        plan: {
+          type: 'object',
+          description: 'The agent plan. Must have: schemaVersion, requestId, description, document, units, coordinateSystem, executionMode, operations[], safety{}.',
+          properties: {
+            schemaVersion: { type: 'string', const: '1.0' },
+            requestId: { type: 'string' },
+            description: { type: 'string' },
+            document: { type: 'object' },
+            units: { type: 'string', enum: ['mm', 'cm', 'm', 'inch', 'ft'] },
+            coordinateSystem: { type: 'string', enum: ['project', 'internal'] },
+            executionMode: { type: 'string', enum: ['preview', 'validate', 'commit'] },
+            operations: { type: 'array', items: { type: 'object' } },
+            safety: { type: 'object' }
+          }
+        }
+      }
+    }
   },
   {
     name: 'revit_commit_plan',
     description: 'Executes a plan inside a transaction group after confirmation. Returns a job id for tracking.',
-    inputSchema: { type: 'object', required: ['plan'], properties: { plan: { type: 'object', description: 'The agent plan to commit' } } }
+    inputSchema: {
+      type: 'object',
+      required: ['plan'],
+      properties: {
+        plan: {
+          type: 'object',
+          description: 'The agent plan. Must have: schemaVersion, requestId, description, document, units, coordinateSystem, executionMode, operations[], safety{}.',
+          properties: {
+            schemaVersion: { type: 'string', const: '1.0' },
+            requestId: { type: 'string' },
+            description: { type: 'string' },
+            document: { type: 'object' },
+            units: { type: 'string', enum: ['mm', 'cm', 'm', 'inch', 'ft'] },
+            coordinateSystem: { type: 'string', enum: ['project', 'internal'] },
+            executionMode: { type: 'string', enum: ['preview', 'validate', 'commit'] },
+            operations: { type: 'array', items: { type: 'object' } },
+            safety: { type: 'object' }
+          }
+        }
+      }
+    }
   },
   {
     name: 'revit_confirm_plan',

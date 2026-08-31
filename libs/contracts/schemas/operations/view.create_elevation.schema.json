@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://autodesk-native-agent.local/schemas/operations/view.create_elevation.schema.json",
+  "title": "view.create_elevation arguments",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["box"],
+  "properties": {
+    "box": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["min", "max"],
+      "properties": {
+        "min": { "$ref": "#/$defs/point3d" },
+        "max": { "$ref": "#/$defs/point3d" }
+      }
+    },
+    "viewType": {
+      "type": "string",
+      "const": "elevation",
+      "default": "elevation",
+      "description": "view.create_elevation always creates an elevation view."
+    },
+    "name": {
+      "type": "string",
+      "description": "Optional view name. Auto-generated when omitted."
+    },
+    "scale": {
+      "type": "number",
+      "default": 100,
+      "description": "View scale (1:scale)."
+    },
+    "direction": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 3,
+      "default": 0,
+      "description": "Elevation direction index 0-3."
+    }
+  },
+  "$defs": {
+    "point3d": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["x", "y"],
+      "properties": {
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "z": { "type": "number", "default": 0 }
+      }
+    }
+  }
+}

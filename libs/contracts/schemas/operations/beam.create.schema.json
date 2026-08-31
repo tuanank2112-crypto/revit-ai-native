@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://autodesk-native-agent.local/schemas/operations/beam.create.schema.json",
+  "title": "beam.create arguments",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["start", "end", "level", "type"],
+  "properties": {
+    "start": { "$ref": "#/$defs/point3d" },
+    "end": { "$ref": "#/$defs/point3d" },
+    "level": { "$ref": "wall.create.schema.json#/$defs/levelSelector" },
+    "type": { "$ref": "wall.create.schema.json#/$defs/typeSelector" },
+    "depth": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "description": "Beam depth (height). Can also be passed as 'height' for compatibility."
+    },
+    "height": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "description": "Alias for depth; used when the beam is described as a structural wall height."
+    },
+    "width": {
+      "type": "number",
+      "default": 0,
+      "description": "Desired beam width in plan units. The actual width is determined by the WallType; a warning is surfaced if no close match exists."
+    },
+    "baseOffset": {
+      "type": "number",
+      "default": 0,
+      "description": "Base offset from the level in plan units."
+    },
+    "name": {
+      "type": "string",
+      "description": "Optional beam name."
+    }
+  },
+  "$defs": {
+    "point3d": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["x", "y"],
+      "properties": {
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "z": { "type": "number", "default": 0 }
+      }
+    }
+  }
+}
