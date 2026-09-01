@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://autodesk-native-agent.local/schemas/operations/element.move.schema.json",
+  "title": "element.move arguments",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["target", "vector"],
+  "properties": {
+    "target": { "$ref": "../element-reference.schema.json" },
+    "vector": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["x", "y", "z"],
+      "description": "Translation vector in plan units.",
+      "properties": {
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "z": { "type": "number" }
+      }
+    }
+  }
+}

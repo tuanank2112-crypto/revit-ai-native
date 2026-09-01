@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://autodesk-native-agent.local/schemas/operations/parameter.set_many.schema.json",
+  "title": "parameter.set_many arguments",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["items"],
+  "properties": {
+    "items": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["target", "value"],
+        "properties": {
+          "target": { "$ref": "../element-reference.schema.json" },
+          "parameter": {
+            "type": "string",
+            "description": "BuiltInParameter enum name or exact display name."
+          },
+          "guid": {
+            "type": "string",
+            "description": "Shared parameter GUID (takes precedence over parameter name)."
+          },
+          "value": {
+            "type": ["string", "number", "boolean"],
+            "description": "Typed value; must match the parameter storage type."
+          },
+          "unit": {
+            "type": "string",
+            "description": "Optional unit override for length/angle values (e.g. mm, deg)."
+          }
+        }
+      }
+    }
+  }
+}

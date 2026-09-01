@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://autodesk-native-agent.local/schemas/operations/element.rotate.schema.json",
+  "title": "element.rotate arguments",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["target", "axis", "angle"],
+  "properties": {
+    "target": { "$ref": "../element-reference.schema.json" },
+    "axis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["origin", "direction"],
+      "properties": {
+        "origin": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["x", "y", "z"],
+          "properties": {
+            "x": { "type": "number" },
+            "y": { "type": "number" },
+            "z": { "type": "number" }
+          }
+        },
+        "direction": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["x", "y", "z"],
+          "properties": {
+            "x": { "type": "number" },
+            "y": { "type": "number" },
+            "z": { "type": "number" }
+          }
+        }
+      }
+    },
+    "angle": {
+      "type": "number",
+      "description": "Rotation angle magnitude."
+    },
+    "angleUnit": {
+      "enum": ["deg", "rad"],
+      "default": "deg"
+    }
+  }
+}

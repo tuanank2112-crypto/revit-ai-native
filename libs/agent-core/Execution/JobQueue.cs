@@ -15,6 +15,7 @@ namespace AutodeskNativeAgent.Core.Execution
         private readonly BlockingCollection<Job> _queue = new BlockingCollection<Job>(64);
         private readonly object _registryGate = new object();
         private readonly Dictionary<string, Job> _registry = new Dictionary<string, Job>(StringComparer.Ordinal);
+        private readonly Dictionary<string, Job> _idempotencyRegistry = new Dictionary<string, Job>(StringComparer.Ordinal);
 
         /// <summary>Enqueues a job. Returns false when the queue is full.</summary>
         public bool Enqueue(Job job)
@@ -35,6 +36,74 @@ namespace AutodeskNativeAgent.Core.Execution
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Atomically returns an existing job for the same request identity, or enqueues
+        /// and registers the supplied job. The plan hash prevents accidental reuse when
+        /// a caller reuses a request id for different content.
+        /// </summary>
+        public bool EnqueueIdempotent(Job job, string requestIdentity, string planHash, out Job existingJob)
+        {
+            if (job == null)
+            {
+                throw new ArgumentNullException(nameof(job));
+            }
+
+            string key = BuildIdempotencyKey(requestIdentity, planHash);
+            lock (_registryGate)
+            {
+                if (_idempotencyRegistry.TryGetValue(key, out existingJob))
+                {
+                    return true;
+                }
+
+                if (!_queue.TryAdd(job, TimeSpan.FromSeconds(2)))
+                {
+                    existingJob = null;
+                    return false;
+                }
+
+                _registry[job.JobId] = job;
+                _idempotencyRegistry[key] = job;
+                existingJob = null;
+                return true;
+            }
+        }
+
+        /// <summary>Finds a job by its request identity and exact plan hash.</summary>
+        public Job FindByIdempotency(string requestIdentity, string planHash)
+        {
+            lock (_registryGate)
+            {
+                Job job;
+                return _idempotencyRegistry.TryGetValue(BuildIdempotencyKey(requestIdentity, planHash), out job)
+                    ? job
+                    : null;
+            }
+        }
+
+        /// <summary>Finds an existing job for a request identity, regardless of plan hash.</summary>
+        public Job FindByRequestIdentity(string requestIdentity)
+        {
+            string prefix = (requestIdentity ?? string.Empty).Trim() + "\n";
+            lock (_registryGate)
+            {
+                foreach (var pair in _idempotencyRegistry)
+                {
+                    if (pair.Key.StartsWith(prefix, StringComparison.Ordinal))
+                    {
+                        return pair.Value;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        private static string BuildIdempotencyKey(string requestIdentity, string planHash)
+        {
+            return (requestIdentity ?? string.Empty).Trim() + "\n" + (planHash ?? string.Empty).Trim();
         }
 
         /// <summary>Dequeues the next job, blocking up to <paramref name="timeoutMs"/>.</summary>
@@ -82,7 +151,28 @@ namespace AutodeskNativeAgent.Core.Execution
         {
             lock (_registryGate)
             {
-                return _registry.Remove(jobId);
+                Job removed;
+                if (!_registry.TryGetValue(jobId, out removed))
+                {
+                    return false;
+                }
+
+                _registry.Remove(jobId);
+                var keysToRemove = new List<string>();
+                foreach (var pair in _idempotencyRegistry)
+                {
+                    if (ReferenceEquals(pair.Value, removed))
+                    {
+                        keysToRemove.Add(pair.Key);
+                    }
+                }
+
+                foreach (string key in keysToRemove)
+                {
+                    _idempotencyRegistry.Remove(key);
+                }
+
+                return true;
             }
         }
 

@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://autodesk-native-agent.local/schemas/operations/sheet.create.schema.json",
+  "title": "sheet.create arguments",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["sheetNumber"],
+  "properties": {
+    "sheetNumber": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Sheet number (must be unique in the document)."
+    },
+    "sheetName": {
+      "type": "string",
+      "description": "Optional sheet name."
+    },
+    "titleBlock": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Omit to auto-use the single title block when exactly one exists.",
+      "required": ["strategy"],
+      "properties": {
+        "strategy": {
+          "enum": ["exact_name"]
+        },
+        "name": {
+          "type": "string",
+          "description": "Title block family name."
+        }
+      }
+    }
+  }
+}

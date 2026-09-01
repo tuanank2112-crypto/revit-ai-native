@@ -1,3 +1,43 @@
+# RELEASE NOTES — v1.1.0 (2026-09-01)
+
+## Summary
+
+Feature release: **28 operations** (10 Tier-1 mới), JSON Schema validation đầy đủ 28/28 ops,
+runtime hardening, và **E2E verified trên Revit 2024 thật** với workflow nhà 2 tầng hoàn chỉnh.
+
+## Verified in this release
+
+- **Build**: 0 errors, 0 warnings (Release)
+- **Unit + integration tests**: 73/73 pass (net8.0) — schema coverage 28/28 ops
+- **MCP server**: `npm run build` pass
+- **E2E in live Revit 2024 (2026-09-01)**:
+  - Tier-1 probe: 7/7 ops completed (column/family/beam/slab/roof/section/elevation), 8/8 assertions pass
+  - **2-story house workflow** (`artifacts/e2e/house-2story.json`): 18/18 ops completed
+    (10 walls, slab, roof, section, door, 4 windows), 18/18 assertions pass, 0 errors
+  - Probe cleanup: 7/7 `element.delete` completed, 0 errors (house untouched)
+- **Hardening (4 fixes)**:
+  1. Confirmation token **single-use enforced** — `MarkUsed()` ngay sau commit (không replay được)
+  2. `export.pdf` output directory validated qua `SecurityValidator` — không tự tạo thư mục bất kỳ
+  3. `family.load` chỉ nhận `.rfa`/`.fam`, path phải canonical (chặn traversal)
+  4. `MainThreadDispatcher` log exception thay vì nuốt lặng lẽ
+
+## New operations (Tier 1)
+
+`level.create`, `grid.create`, `family.load`, `family.instance.create`, `column.create`,
+`beam.create`, `slab.create`, `roof.create`, `view.create_section`, `view.create_elevation`
+
+> [!NOTE]
+> Implementation quirks đã ghi nhận: `slab.create` dùng `Ceiling.Create` (category "Ceilings")
+> vì Slab API absent; `beam.create` dùng 8-arg structural `Wall.Create`; roof overhang có thể
+> bị warning nếu footprint đã mở rộng sẵn. Chi tiết: `docs/REVIT-2024-API-CATALOG.md`.
+
+## Package
+
+- `artifacts/AutodeskNativeAgent-1.1.0.zip` (add-in DLL + manifest, MCP dist, scripts, samples, NuGet Core)
+- NuGet: `AutodeskNativeAgent.Core` (net48 + net8.0)
+
+---
+
 # RELEASE NOTES — v1.0.0 (2026-08-27)
 
 ## Summary

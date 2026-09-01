@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://autodesk-native-agent.local/schemas/operations/document.save_as.schema.json",
+  "title": "document.save_as arguments",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["path"],
+  "properties": {
+    "path": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Absolute target .rvt file path."
+    },
+    "overwrite": { "type": "boolean", "default": false },
+    "backup": { "type": "boolean", "default": false }
+  }
+}

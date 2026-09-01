@@ -162,20 +162,51 @@ namespace AutodeskNativeAgent.Revit2024.Execution
             }
 
             var uidoc = app.ActiveUIDocument;
-            var selectedIds = uidoc.Selection.GetElementIds();
+            Document document = uidoc.Document;
+            string title = SafeString(() => document.Title);
+            string path = SafeString(() => document.PathName);
+            string projectNumber = SafeString(() => document.ProjectInformation?.Number);
+            string projectName = SafeString(() => document.ProjectInformation?.Name);
+            string fingerprint = Core.Identity.DocumentFingerprint.FromIdentity(
+                title, path, projectNumber, projectName);
+
             var items = new List<JsonValue>();
-            foreach (ElementId id in selectedIds)
+            var references = new List<JsonValue>();
+            foreach (ElementId id in uidoc.Selection.GetElementIds())
             {
-                Element element = uidoc.Document.GetElement(id);
+                Element element = document.GetElement(id);
                 if (element != null)
                 {
-                    items.Add(ElementResolver.Summarize(element).ToJson());
+                    ElementSummary summary = ElementResolver.Summarize(element);
+                    items.Add(summary.ToJson());
+                    references.Add(new ElementReference(
+                        uniqueId: summary.UniqueId,
+                        elementId: summary.ElementId,
+                        documentFingerprint: fingerprint,
+                        category: summary.Category,
+                        expectedName: summary.Name,
+                        expectedTypeName: summary.TypeName).ToJson());
                 }
             }
 
+            View activeView = document.ActiveView;
+            JsonValue activeViewJson = activeView == null
+                ? JsonValue.Null
+                : JsonValue.Object(new Dictionary<string, JsonValue>(StringComparer.Ordinal)
+                {
+                    ["id"] = JsonValue.Number(activeView.Id.Value),
+                    ["uniqueId"] = JsonValue.String(activeView.UniqueId),
+                    ["name"] = JsonValue.String(activeView.Name ?? string.Empty),
+                    ["viewType"] = JsonValue.String(activeView.ViewType.ToString()),
+                    ["isTemplate"] = JsonValue.Bool(activeView.IsTemplate)
+                });
+
             return JsonValue.Object(new Dictionary<string, JsonValue>(StringComparer.Ordinal)
             {
+                ["documentFingerprint"] = JsonValue.String(fingerprint),
+                ["activeView"] = activeViewJson,
                 ["elements"] = JsonValue.Array(items),
+                ["references"] = JsonValue.Array(references),
                 ["count"] = JsonValue.Number(items.Count)
             });
         }

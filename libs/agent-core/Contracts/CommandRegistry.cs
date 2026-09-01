@@ -134,7 +134,7 @@ namespace AutodeskNativeAgent.Core.Contracts
                 modifies: 1,
                 deletes: 0,
                 summary: "Updates properties of an existing wall (type, height, offsets, structural).",
-                argumentSchema: JsonValue.Null));
+                argumentSchema: SchemaCatalog.LoadOperationSchema("wall.update")));
 
             registry.Register(new OperationDescriptor(
                 "door.insert",
@@ -150,7 +150,7 @@ namespace AutodeskNativeAgent.Core.Contracts
                 modifies: 0,
                 deletes: 0,
                 summary: "Inserts a window family instance hosted by a wall at the requested location.",
-                argumentSchema: JsonValue.Null));
+                argumentSchema: SchemaCatalog.LoadOperationSchema("window.insert")));
 
             registry.Register(new OperationDescriptor(
                 "parameter.set",
@@ -166,7 +166,7 @@ namespace AutodeskNativeAgent.Core.Contracts
                 modifies: -1,
                 deletes: 0,
                 summary: "Sets multiple typed parameters on one or more elements atomically.",
-                argumentSchema: JsonValue.Null));
+                argumentSchema: SchemaCatalog.LoadOperationSchema("parameter.set_many")));
 
             registry.Register(new OperationDescriptor(
                 "element.delete",
@@ -182,7 +182,7 @@ namespace AutodeskNativeAgent.Core.Contracts
                 modifies: 1,
                 deletes: 0,
                 summary: "Translates an element by a vector in plan units.",
-                argumentSchema: JsonValue.Null));
+                argumentSchema: SchemaCatalog.LoadOperationSchema("element.move")));
 
             registry.Register(new OperationDescriptor(
                 "element.rotate",
@@ -190,7 +190,7 @@ namespace AutodeskNativeAgent.Core.Contracts
                 modifies: 1,
                 deletes: 0,
                 summary: "Rotates an element around an axis by a specified angle.",
-                argumentSchema: JsonValue.Null));
+                argumentSchema: SchemaCatalog.LoadOperationSchema("element.rotate")));
 
             registry.Register(new OperationDescriptor(
                 "element.rename",
@@ -198,7 +198,7 @@ namespace AutodeskNativeAgent.Core.Contracts
                 modifies: 1,
                 deletes: 0,
                 summary: "Changes the Name property of an element.",
-                argumentSchema: JsonValue.Null));
+                argumentSchema: SchemaCatalog.LoadOperationSchema("element.rename")));
 
             registry.Register(new OperationDescriptor(
                 "room.create",
@@ -206,7 +206,7 @@ namespace AutodeskNativeAgent.Core.Contracts
                 modifies: 0,
                 deletes: 0,
                 summary: "Creates a room on a level at a given UV point.",
-                argumentSchema: JsonValue.Null));
+                argumentSchema: SchemaCatalog.LoadOperationSchema("room.create")));
 
             registry.Register(new OperationDescriptor(
                 "view.create_plan",
@@ -214,7 +214,7 @@ namespace AutodeskNativeAgent.Core.Contracts
                 modifies: 0,
                 deletes: 0,
                 summary: "Creates a floor plan or ceiling plan view for a level.",
-                argumentSchema: JsonValue.Null));
+                argumentSchema: SchemaCatalog.LoadOperationSchema("view.create_plan")));
 
             registry.Register(new OperationDescriptor(
                 "sheet.create",
@@ -222,7 +222,7 @@ namespace AutodeskNativeAgent.Core.Contracts
                 modifies: 0,
                 deletes: 0,
                 summary: "Creates a new sheet with an optional title block.",
-                argumentSchema: JsonValue.Null));
+                argumentSchema: SchemaCatalog.LoadOperationSchema("sheet.create")));
 
             registry.Register(new OperationDescriptor(
                 "sheet.place_view",
@@ -230,7 +230,7 @@ namespace AutodeskNativeAgent.Core.Contracts
                 modifies: 0,
                 deletes: 0,
                 summary: "Places a view on a sheet at a specified location.",
-                argumentSchema: JsonValue.Null));
+                argumentSchema: SchemaCatalog.LoadOperationSchema("sheet.place_view")));
 
             registry.Register(new OperationDescriptor(
                 "document.save",
@@ -238,7 +238,7 @@ namespace AutodeskNativeAgent.Core.Contracts
                 modifies: 0,
                 deletes: 0,
                 summary: "Saves the active document to its current path.",
-                argumentSchema: JsonValue.Null,
+                argumentSchema: SchemaCatalog.LoadOperationSchema("document.save"),
                 supportedInPreview: false));
 
             registry.Register(new OperationDescriptor(
@@ -247,7 +247,7 @@ namespace AutodeskNativeAgent.Core.Contracts
                 modifies: 0,
                 deletes: 0,
                 summary: "Saves the active document to a new path (sensitive).",
-                argumentSchema: JsonValue.Null,
+                argumentSchema: SchemaCatalog.LoadOperationSchema("document.save_as"),
                 supportedInPreview: false));
 
             registry.Register(new OperationDescriptor(
@@ -256,7 +256,7 @@ namespace AutodeskNativeAgent.Core.Contracts
                 modifies: 0,
                 deletes: 0,
                 summary: "Exports selected views/sheets to DWG.",
-                argumentSchema: JsonValue.Null,
+                argumentSchema: SchemaCatalog.LoadOperationSchema("export.dwg"),
                 supportedInPreview: false));
 
             registry.Register(new OperationDescriptor(
@@ -265,7 +265,7 @@ namespace AutodeskNativeAgent.Core.Contracts
                 modifies: 0,
                 deletes: 0,
                 summary: "Exports selected views/sheets to PDF.",
-                argumentSchema: JsonValue.Null,
+                argumentSchema: SchemaCatalog.LoadOperationSchema("export.pdf"),
                 supportedInPreview: false));
 
             registry.Register(new OperationDescriptor(

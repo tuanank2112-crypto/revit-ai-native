@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://autodesk-native-agent.local/schemas/operations/room.create.schema.json",
+  "title": "room.create arguments",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["level", "point"],
+  "properties": {
+    "level": { "$ref": "wall.create.schema.json#/$defs/levelSelector" },
+    "point": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["u", "v"],
+      "description": "UV point on the level in plan units.",
+      "properties": {
+        "u": { "type": "number" },
+        "v": { "type": "number" }
+      }
+    },
+    "name": {
+      "type": "string",
+      "description": "Optional room name."
+    }
+  }
+}

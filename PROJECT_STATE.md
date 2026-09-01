@@ -1,6 +1,6 @@
 # PROJECT_STATE — Autodesk Native Agent Runtime
 
-> Cập nhật lần cuối: 2026-08-31 · Hidden format: đây là trạng thái thực tế của project, không phải template.
+> Cập nhật lần cuối: 2026-09-01 · Hidden format: đây là trạng thái thực tế của project, không phải template.
 
 ## Mục tiêu của project
 
@@ -40,7 +40,7 @@ apps/revit-2024-addin (C# net48, IExternalApplication)
 - `Contracts/CommandRegistry.cs` + `OperationDescriptor` — allowlist ~20 ops, affected-element accounting.
 - `Contracts/SchemaCatalog.cs` — load embedded JSON Schema (logical name dùng **backslash** `operations\...`).
 - `Validation/PlanValidator.cs`, `Execution/ResultReferenceResolver.cs`, `Policy/ProjectPolicy.cs`, `Security/SecurityValidator.cs`, `Execution/PlanHasher.cs`, `Execution/DocumentFingerprint.cs`.
-- Schemas: `libs/contracts/schemas/**` (element-reference, pipe-envelope, agent-plan, assertion, execution-result, preview-report, project-policy, query, operations/{wall.create,door.insert,element.delete,parameter.set}).
+- Schemas: `libs/contracts/schemas/**` (element-reference, pipe-envelope, agent-plan, assertion, execution-result, preview-report, project-policy, query, operations/* — **đủ 28/28 operations**).
 
 ### Add-in Revit 2024 (`apps/revit-2024-addin`, net48, RevitAPI 2024 @ D:\REVIT\2024)
 - `AgentAddInApplication.cs` — IExternalApplication, OnStartup khởi tạo dispatcher/jobQueue/auditLog/router/pipecServer.
@@ -73,38 +73,28 @@ apps/revit-2024-addin (C# net48, IExternalApplication)
 9. Scripts PowerShell phải có **UTF-8 BOM** (PS 5.1 đọc sai em dash `—` nếu không BOM).
 10. `ElementId.IntegerValue` deprecated Revit 2024 → `.Value` (long); riêng `WorksetId` CHỈ có `IntegerValue`.
 
-## Trạng thái hiện tại (2026-08-31, sau phase 2 — 8 op mới Tier-1 + schema validation)
+## Trạng thái hiện tại (2026-09-01, sau phase 5–6 — release v1.1.0)
 
-- ✅ **Build solution 0 error / 0 warning** (Release). **69/69 tests pass** (59 cũ + 10 mới). MCP `npm run build` OK.
-- ✅ **JSON Schema validation cho 10 op còn thiếu schema** (2026-08-31):
-  - `level.create`, `grid.create`, `family.load`, `family.instance.create`, `column.create`,
-    `beam.create`, `slab.create`, `roof.create`, `view.create_section`, `view.create_elevation`.
-  - Schema files mới trong `libs/contracts/schemas/operations/`, register trong `CommandRegistry`
-    (trước đây `argumentSchema: JsonValue.Null` → KHÔNG validate args).
-  - MCP tools `revit_validate_plan` / `revit_preview_plan` / `revit_commit_plan` có `inputSchema`
-    cấu trúc (schemaVersion/units/coordinateSystem/executionMode/operations/safety) thay vì `{}` trống.
-  - 10 unit test mới trong `SchemaTests.cs` (valid + missing-required/minItems/const).
-- ✅ **8 op mới Tier-1 đã implement + register + dispatch (tổng 28 ops)**:
-  - `family.load` (Document.LoadFamilySymbol — `LoadFamily(String,…)` ABSENT)
-  - `family.instance.create` (3-arg `NewFamilyInstance`; `StructuralType` chỉ có NonStructural/Column/Beam)
-  - `column.create` (wrapper family.instance, category OST_Columns)
-  - `beam.create` (8-arg `Wall.Create` structural — `Wall.Width` READ-ONLY)
-  - `slab.create` (`Ceiling.Create`; `CurveLoop` = `new`+`Append`, KHÔNG có 1-arg ctor)
-  - `roof.create` (`NewFootPrintRoof(..., out ModelCurveArray)`; `CurveArray`/`ModelCurveArray` = `new`+`Append`)
-  - `view.create_section` (`ViewSection.CreateSection`; `BoundingBoxXYZ` chỉ Min/Max)
-  - `view.create_elevation` (reuse section op, ViewFamily.Elevation)
-- ✅ **Docs phase 1**: `docs/REVIT-2024-API-CATALOG.md` + `docs/FEATURE-ROADMAP.md` (Tier 0/1/2/3, verified).
-- ⚠️ **Sửa sai audit cũ**: audit session trước chỉ quét namespace 1-level `Autodesk.Revit.DB.*` → **nhầm** các type trong `Architecture` (Stairs/StairsRun/StairsLanding/Railing/Room) và `Structure` (Truss) là "thiếu". Các type đó **CÓ** (verified). Riêng `Stairs.Create` **thật sự ABSENT** → cầu thang native bị chặn, fallback = family instance.
-- ⚠️ **Add-in đang chạy trong Revit vẫn là v1.0.0 cũ (20 ops)** — bản 28 ops CHƯA install.
-- E2E 12/12 (session trước, 20 ops) vẫn hợp lệ; 8 op mới **chưa E2E**.
+- ✅ **Build solution 0 error / 0 warning** (Release). **73/73 tests pass**. MCP `npm run build` OK.
+- ✅ **JSON Schema validation đầy đủ 28/28 ops** (10 schema lần 1 + 14 schema lần 2, register trong CommandRegistry).
+- ✅ **8 op mới Tier-1 đã implement + register + dispatch (tổng 28 ops)**: family.load, family.instance.create, column.create, beam.create, slab.create, roof.create, view.create_section, view.create_elevation.
+- ✅ **Add-in bản 28 ops ĐÃ INSTALL + E2E THẬT trên Revit 2024 (Project1, 2026-09-01)**:
+  - Probe Tier-1: 7/7 ops completed, 8/8 assertions pass (beam length 4000mm diff=0).
+  - **Nhà 2 tầng** (`artifacts/e2e/house-2story.json`): 18/18 ops completed (10 wall + slab + roof + section + door + 4 window), 18/18 assertions pass, 0 errors. elementId: walls 1594010–1594019, slab 1594022, roof 1594029, section 1594045, door 1594053, windows 1594061/73/78/83.
+  - Cleanup probe: 7/7 element.delete completed, 0 errors — model chỉ còn 18 element nhà.
+- ✅ **Hardening phase 5 (4 fix)**: token single-use (MarkUsed sau commit), export.pdf SecurityValidator + không auto-create dir, family.load .rfa/.fam + canonical path, dispatcher log exception thay vì nuốt.
+- ✅ **Phase 6**: MCP build pass; release zip v1.1.0 (`artifacts/AutodeskNativeAgent-1.1.0.zip`) + NuGet Core nupkg; ci.yml + release.yml sẵn sàng.
+- ⚠️ **Implementation quirks đã ghi nhận**: slab.create → Ceiling.Create (category "Ceilings"); beam.create → structural Wall.Create; roof overhang warning khi footprint đã mở rộng sẵn (mái vẫn đủ overhang thực tế); door resolved.level trả rỗng nhưng tạo đúng.
+- ⚠️ **Confirm flow**: token dùng đúng 1 lần; sau confirm job resume chạy theo Revit idle pulse (có thể trễ vài chục giây) — poll ≥2–3 phút, confirm duy nhất 1 lần.
+- E2E 12/12 (session trước, 20 ops) vẫn hợp lệ cho Tier 0.
 
 ## Bước tiếp theo chính xác
 
-1. **Install bản mới**: `.\scripts\install-revit2024.ps1 -Configuration Release`.
-2. **Restart Revit 2024 1 lần** (bắt buộc — add-in load DLL lúc start).
-3. **E2E 8 op mới** qua named pipe: validate → preview → commit → confirm → job.status → assert (tạo 1 level, 1 grid, 1 cột, 1 dầm, 1 slab, 1 roof, 1 section, 1 elevation; rồi `element.delete` dọn probe).
-4. **Phase 4**: build nhà 2 tầng đúng kích thước (theo thứ tự trong `docs/FEATURE-ROADMAP.md`).
-5. (Tuỳ chọn) Push repo lên GitHub → CI/Release.
+1. (User quyết định) **Commit + push lên GitHub** — 25+ file thay đổi chưa commit; subagent không tự commit main.
+2. (User quyết định) **Tag v1.1.0** → release.yml tự build release artifact.
+3. (User quyết định) **Publish NuGet** `AutodeskNativeAgent.Core` lên GitHub Packages/feed.
+4. **Backlog Tier-2** (roadmap đã có): group.create/ungroup, view.create_3d, railing.create, buildingpad.create, MEP…
+5. **Backlog Tier-5**: Revit 2025, AutoCAD host, undo/redo ops, streaming progress.
 
 ## Lệnh build/test cần chạy
 

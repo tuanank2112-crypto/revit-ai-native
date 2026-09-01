@@ -81,5 +81,27 @@ namespace AutodeskNativeAgent.Core.Tests
             Assert.Equal(1, json["summary"]["willCreate"].AsInt());
             Assert.True(json["summary"]["requiresUserConfirmation"].AsBool());
         }
+
+        [Fact]
+        public void ElementReference_roundtrips_fingerprint_and_identity_guards()
+        {
+            var reference = new ElementReference(
+                uniqueId: "uid-123",
+                elementId: 123,
+                documentFingerprint: "fp-1",
+                category: "Walls",
+                expectedName: "Wall 1",
+                expectedTypeName: "Generic 200");
+
+            JsonValue json = reference.ToJson();
+            ElementReference parsed = ElementReference.FromJson(json);
+
+            Assert.Equal("uid-123", parsed.UniqueId);
+            Assert.Equal(123, parsed.ElementId);
+            Assert.Equal("fp-1", parsed.DocumentFingerprint);
+            Assert.Equal("Walls", parsed.Category);
+            Assert.Equal("Wall 1", parsed.ExpectedName);
+            Assert.Equal("Generic 200", parsed.ExpectedTypeName);
+        }
     }
 }

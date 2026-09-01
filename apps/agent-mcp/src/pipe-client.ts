@@ -160,6 +160,39 @@ export class PipeClient extends EventEmitter {
     });
   }
 
+  /** Polls a Revit job until it reaches a terminal state or the caller timeout expires. */
+  async waitForJob(
+    jobId: string,
+    options?: { timeoutMs?: number; initialPollMs?: number; maxPollMs?: number; correlationId?: string }
+  ): Promise<unknown> {
+    if (!jobId) throw new Error('jobId is required');
+
+    const timeoutMs = clamp(options?.timeoutMs ?? 120000, 1000, 900000);
+    const initialPollMs = clamp(options?.initialPollMs ?? 250, 50, 10000);
+    const maxPollMs = clamp(options?.maxPollMs ?? 3000, initialPollMs, 30000);
+    const startedAt = Date.now();
+    let delayMs = initialPollMs;
+
+    while (true) {
+      const status = await this.request('job.status', { jobId }, options?.correlationId) as Record<string, any>;
+      const wireStatus = String(status?.status ?? '');
+      if (TERMINAL_JOB_STATUSES.has(wireStatus)) return status;
+
+      const elapsedMs = Date.now() - startedAt;
+      if (elapsedMs >= timeoutMs) {
+        throw createPipeError(
+          'JOB_WAIT_TIMEOUT',
+          `Job '${jobId}' did not reach a terminal state within ${timeoutMs}ms.`,
+          true,
+          'Call job.status again or retry wait with a larger timeout.'
+        );
+      }
+
+      await sleep(Math.min(delayMs, timeoutMs - elapsedMs));
+      delayMs = Math.min(maxPollMs, Math.ceil(delayMs * 1.5));
+    }
+  }
+
   async disconnect(): Promise<void> {
     this.stopHeartbeat();
     this.failPending(new Error('Pipe connection closed by client'));
@@ -285,6 +318,22 @@ function buildEnvelope(
   if (error) { env.error = error; env.success = false; }
 
   return env;
+}
+
+const TERMINAL_JOB_STATUSES = new Set([
+  'completed',
+  'failed',
+  'cancelled',
+  'rolled_back',
+  'timed_out',
+]);
+
+function clamp(value: number, minimum: number, maximum: number): number {
+  return Math.max(minimum, Math.min(maximum, Math.floor(value)));
+}
+
+function sleep(milliseconds: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, milliseconds));
 }
 
 function createPipeError(code: string, message: string, recoverable: boolean, suggestedAction?: string): Error {

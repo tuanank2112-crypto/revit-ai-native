@@ -222,6 +222,18 @@ namespace AutodeskNativeAgent.Revit2024.Execution
 
             string planHash = PlanHasher.HashJson(payload);
 
+            if (method == ProtocolCatalog.PlanCommit)
+            {
+                Job priorJob = _jobQueue.FindByRequestIdentity(plan.RequestId);
+                if (priorJob != null && !string.Equals(priorJob.PlanHash, planHash, StringComparison.OrdinalIgnoreCase))
+                {
+                    return PipeProtocol.Fail(requestId, method,
+                        new AgentError(ErrorCodes.RequestIdConflict,
+                            "requestId '" + plan.RequestId + "' is already associated with a different plan.", false,
+                            "Use a new requestId for the changed plan."));
+                }
+            }
+
             // Validate structurally before enqueueing.
             PlanValidationResult validation = PlanValidator.Validate(plan, _registry);
             if (!validation.Valid)
@@ -244,13 +256,44 @@ namespace AutodeskNativeAgent.Revit2024.Execution
 
             string jobId = "j" + DateTime.UtcNow.Ticks.ToString("x");
             var job = new Job(jobId, plan, planHash, "mcp:" + requestId);
+            Job existingJob = null;
+            bool enqueued;
+            bool deduplicated = false;
 
-            if (!_jobQueue.Enqueue(job))
+            if (method == ProtocolCatalog.PlanCommit)
+            {
+                enqueued = _jobQueue.EnqueueIdempotent(job, plan.RequestId, planHash, out existingJob);
+                if (existingJob != null)
+                {
+                    job = existingJob;
+                    jobId = job.JobId;
+                    deduplicated = true;
+                }
+            }
+            else
+            {
+                enqueued = _jobQueue.Enqueue(job);
+            }
+
+            if (!enqueued)
             {
                 return PipeProtocol.Fail(requestId, method,
                     new AgentError(ErrorCodes.RateLimited, "The job queue is full.", true, "Retry shortly."));
             }
 
+            if (deduplicated)
+            {
+                return PipeProtocol.Ok(requestId, method,
+                    JsonValue.Object(new Dictionary<string, JsonValue>(StringComparer.Ordinal)
+                    {
+                        ["jobId"] = JsonValue.String(jobId),
+                        ["planHash"] = JsonValue.String(planHash),
+                        ["status"] = JsonValue.String(ExecutionResult.StatusToWire(job.Status)),
+                        ["deduplicated"] = JsonValue.Bool(true)
+                    }));
+            }
+
+            job.UpdateProgress("queued", 0, plan.Operations.Count, "Plan is queued for Revit.");
             job.Transition(JobStatus.WaitingForRevit);
 
             _auditLog.Append("mcp:" + requestId, method, AuditSeverity.Action,
@@ -266,12 +309,19 @@ namespace AutodeskNativeAgent.Revit2024.Execution
                 {
                     ["jobId"] = JsonValue.String(jobId),
                     ["planHash"] = JsonValue.String(planHash),
-                    ["status"] = JsonValue.String(ExecutionResult.StatusToWire(job.Status))
+                    ["status"] = JsonValue.String(ExecutionResult.StatusToWire(job.Status)),
+                    ["deduplicated"] = JsonValue.Bool(false)
                 }));
         }
 
         private void ExecutePlan(UIApplication app, Document doc, Job job, string method)
         {
+            if (job.CancellationRequested || job.Status == JobStatus.Cancelled)
+            {
+                job.UpdateProgress("cancelled", 0, job.Plan.Operations.Count, "Plan was cancelled before execution.");
+                return;
+            }
+
             if (doc != null)
             {
                 _activeDocumentTitle = doc.Title ?? string.Empty;
@@ -300,6 +350,12 @@ namespace AutodeskNativeAgent.Revit2024.Execution
                 {
                     job.Transition(JobStatus.Validating);
                 }
+                job.UpdateProgress("validating", 0, job.Plan.Operations.Count, "Validating the plan against the active document.");
+
+                if (job.CancellationRequested || job.Status == JobStatus.Cancelled)
+                {
+                    return;
+                }
 
                 var executor = new PlanExecutor();
                 if (isPreview)
@@ -308,6 +364,7 @@ namespace AutodeskNativeAgent.Revit2024.Execution
                     job.Complete(new ExecutionResult(
                         job.JobId, JobStatus.Completed, report.DocumentFingerprint, job.PlanHash,
                         DateTime.UtcNow, DateTime.UtcNow, true, null, null, null, null));
+                    job.UpdateProgress("completed", job.Plan.Operations.Count, job.Plan.Operations.Count, "Preview completed successfully.");
                 }
                 else if (isCommit)
                 {
@@ -320,6 +377,7 @@ namespace AutodeskNativeAgent.Revit2024.Execution
                             // Issue a token and stop; the agent must confirm before retrying.
                             token = _tokenStore.Issue(job.JobId, job.PlanHash, job.Plan.Description);
                             job.SetConfirmationToken(token.Value);
+                            job.UpdateProgress("awaiting_confirmation", 0, job.Plan.Operations.Count, "Waiting for user confirmation before modifying Revit.");
                             job.Transition(JobStatus.AwaitingConfirmation);
                             return;
                         }
@@ -359,8 +417,22 @@ namespace AutodeskNativeAgent.Revit2024.Execution
                         }
                     }
 
+                    // Single-use: the confirmation token is consumed by the commit that
+                    // uses it, regardless of commit outcome (success/fail/rollback). The
+                    // token cannot be replayed to commit the same plan twice.
+                    ConfirmationToken issuedToken = job.Plan.Safety.RequireUserConfirmation
+                        ? _tokenStore.Get(job.JobId)
+                        : null;
+
+                    job.UpdateProgress("executing", 0, job.Plan.Operations.Count, "Executing the plan in Revit.");
                     ExecutionResult result = executor.Commit(doc, job.Plan, _registry);
                     job.Complete(result);
+                    job.UpdateProgress(
+                        result.Status == JobStatus.Completed ? "completed" : "failed",
+                        job.Plan.Operations.Count,
+                        job.Plan.Operations.Count,
+                        result.Status == JobStatus.Completed ? "Plan completed successfully." : "Plan finished with errors.");
+                    issuedToken?.MarkUsed();
                     _auditLog.Append("mcp", "plan.commit", AuditSeverity.Action,
                         "Plan committed: " + job.Plan.Description, null, job.PlanHash, job.JobId);
                 }
@@ -459,15 +531,14 @@ namespace AutodeskNativeAgent.Revit2024.Execution
                     new AgentError(ErrorCodes.JobNotFound, "Job not found: " + jobId, false));
             }
 
-            if (!job.IsCancellable)
+            if (!job.TryCancel())
             {
                 return PipeProtocol.Fail(requestId, ProtocolCatalog.JobCancel,
                     new AgentError(ErrorCodes.JobNotCancellable, "Job is not cancellable in state " + job.Status, false));
             }
 
-            job.Transition(JobStatus.Cancelled);
             _auditLog.Append("mcp", "job.cancel", AuditSeverity.Warning,
-                "Job cancelled: " + jobId, null, null, jobId);
+                "Job cancellation requested: " + jobId, null, null, jobId);
 
             return PipeProtocol.Ok(requestId, ProtocolCatalog.JobCancel,
                 job.ToStatusJson());

@@ -117,10 +117,14 @@ namespace AutodeskNativeAgent.Revit2024.Execution
 
                     item.Callback(app, doc);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
                     // A failed work item must not stop the dispatcher from processing the
-                    // rest of the queue. The callback itself wraps its own error handling.
+                    // rest of the queue. The callback itself wraps its own error handling;
+                    // anything reaching here is a bug — log it instead of swallowing it.
+                    System.Diagnostics.Trace.WriteLine(
+                        "[MainThreadDispatcher] Work item failed: " + item.Description +
+                        " — " + ex.GetType().Name + ": " + ex.Message);
                 }
             }
         }

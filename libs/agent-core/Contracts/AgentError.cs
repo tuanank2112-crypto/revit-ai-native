@@ -84,6 +84,8 @@ namespace AutodeskNativeAgent.Core.Contracts
         public const string JobNotFound = "JOB_NOT_FOUND";
         public const string JobNotCancellable = "JOB_NOT_CANCELLABLE";
         public const string RollbackNotPossible = "ROLLBACK_NOT_POSSIBLE";
+        public const string UndoNotSafe = "UNDO_NOT_SAFE";
+        public const string RequestIdConflict = "REQUEST_ID_CONFLICT";
         public const string InternalError = "INTERNAL_ERROR";
     }
 

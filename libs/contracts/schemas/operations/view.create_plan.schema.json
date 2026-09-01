@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://autodesk-native-agent.local/schemas/operations/view.create_plan.schema.json",
+  "title": "view.create_plan arguments",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["level"],
+  "properties": {
+    "level": { "$ref": "wall.create.schema.json#/$defs/levelSelector" },
+    "viewType": {
+      "enum": ["floor_plan", "ceiling_plan"],
+      "default": "floor_plan"
+    },
+    "name": {
+      "type": "string",
+      "description": "Optional view name; must be unique in the document."
+    }
+  }
+}

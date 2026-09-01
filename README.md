@@ -132,6 +132,20 @@ Audit logs are at `%LOCALAPPDATA%\AutodeskNativeAgent\logs` as JSONL files.
 | `document.save_as` | ✅ Supported |
 | `export.pdf` | ✅ Supported |
 | `export.dwg` | ✅ Supported |
+| `level.create` | ✅ Supported |
+| `grid.create` | ✅ Supported |
+| `family.load` | ✅ Supported |
+| `family.instance.create` | ✅ Supported |
+| `column.create` | ✅ Supported |
+| `beam.create` | ✅ Supported |
+| `slab.create` | ✅ Supported |
+| `roof.create` | ✅ Supported |
+| `view.create_section` | ✅ Supported |
+| `view.create_elevation` | ✅ Supported |
+
+> [!TIP]
+> **28/28 operations** có JSON Schema validation và đã được verify E2E trên Revit 2024 thật
+> (2026-09-01): probe 7 ops + nhà 2 tầng 18 ops — 26/26 assertions pass, 0 errors.
 
 ## MCP Tools
 

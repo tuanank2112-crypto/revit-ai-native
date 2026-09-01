@@ -1,0 +1,8 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://autodesk-native-agent.local/schemas/operations/document.save.schema.json",
+  "title": "document.save arguments",
+  "type": "object",
+  "additionalProperties": false,
+  "description": "Saves the active document to its current path; takes no arguments."
+}

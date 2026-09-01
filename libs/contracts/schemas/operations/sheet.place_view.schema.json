@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://autodesk-native-agent.local/schemas/operations/sheet.place_view.schema.json",
+  "title": "sheet.place_view arguments",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["sheet", "view", "point"],
+  "properties": {
+    "sheet": { "$ref": "../element-reference.schema.json" },
+    "view": { "$ref": "../element-reference.schema.json" },
+    "point": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["x", "y"],
+      "description": "Viewport center on the sheet in plan units.",
+      "properties": {
+        "x": { "type": "number" },
+        "y": { "type": "number" }
+      }
+    }
+  }
+}

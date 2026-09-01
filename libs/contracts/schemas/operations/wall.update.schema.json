@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://autodesk-native-agent.local/schemas/operations/wall.update.schema.json",
+  "title": "wall.update arguments",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["target"],
+  "properties": {
+    "target": { "$ref": "../element-reference.schema.json" },
+    "type": { "$ref": "wall.create.schema.json#/$defs/typeSelector" },
+    "height": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "description": "New unqualified height in the plan's units."
+    },
+    "baseOffset": { "type": "number" },
+    "topOffset": { "type": "number" },
+    "structural": { "type": "boolean" }
+  }
+}

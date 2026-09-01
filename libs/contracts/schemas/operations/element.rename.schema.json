@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://autodesk-native-agent.local/schemas/operations/element.rename.schema.json",
+  "title": "element.rename arguments",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["target", "name"],
+  "properties": {
+    "target": { "$ref": "../element-reference.schema.json" },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "New element name."
+    }
+  }
+}

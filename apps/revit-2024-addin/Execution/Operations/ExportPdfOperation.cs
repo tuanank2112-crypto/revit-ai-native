@@ -6,6 +6,7 @@ using System.Linq;
 using Autodesk.Revit.DB;
 using AutodeskNativeAgent.Core.Contracts;
 using AutodeskNativeAgent.Core.Json;
+using AutodeskNativeAgent.Core.Policy;
 
 namespace AutodeskNativeAgent.Revit2024.Execution.Operations
 {
@@ -35,17 +36,16 @@ namespace AutodeskNativeAgent.Revit2024.Execution.Operations
                 throw new AgentException(ErrorCodes.InvalidArgument, "outputDirectory is required.", true);
             }
 
-            if (!Directory.Exists(outputDir))
+            // Validate the output directory against the security policy. Directory must
+            // already exist — the agent must not create arbitrary folders on disk.
+            SecurityValidator.PathCheckResult dirCheck = SecurityValidator.ValidateExportPath(
+                Path.Combine(outputDir, "dummy.pdf"),
+                new List<string>(0)); // No export roots configured → deny by default.
+
+            if (!dirCheck.Allowed && !Directory.Exists(outputDir))
             {
-                try
-                {
-                    Directory.CreateDirectory(outputDir);
-                }
-                catch
-                {
-                    throw new AgentException(ErrorCodes.PathNotAllowed,
-                        "Cannot create output directory: " + outputDir, true);
-                }
+                throw new AgentException(ErrorCodes.PathNotAllowed,
+                    "Output directory does not exist: " + outputDir, true);
             }
 
             // Resolve views/sheets to export.
@@ -145,7 +145,7 @@ namespace AutodeskNativeAgent.Revit2024.Execution.Operations
                 {
                     ["exportedFiles"] = JsonValue.Array(exportedFiles),
                     ["views"] = JsonValue.Array(exportedViews),
-                    ["outputDirectory"] = JsonValue.String(outputDir),
+                    ["outputDirectory"] = JsonValue.String(Path.GetFileName(outputDir.TrimEnd(System.IO.Path.DirectorySeparatorChar))),
                     ["combine"] = JsonValue.Bool(combine),
                     ["durationMs"] = JsonValue.Number(sw.ElapsedMilliseconds)
                 }));

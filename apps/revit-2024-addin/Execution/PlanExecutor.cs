@@ -284,7 +284,11 @@ namespace AutodeskNativeAgent.Revit2024.Execution
                 planErrors);
         }
 
-        /// <summary>Rolls back a completed job by undoing the last transaction group.</summary>
+        /// <summary>
+        /// Attempts to roll back a completed job. A completed TransactionGroup cannot be
+        /// selected through the Document-only API, so this method refuses to claim success
+        /// until a verified UIApplication undo path is available.
+        /// </summary>
         public void Rollback(Document document, Job job)
         {
             if (document == null)
@@ -292,20 +296,15 @@ namespace AutodeskNativeAgent.Revit2024.Execution
                 throw new AgentException(ErrorCodes.NoActiveDocument, "No active document.", true);
             }
 
-            if (job.Status != JobStatus.Completed)
+            if (job == null || job.Status != JobStatus.Completed)
             {
                 throw new AgentException(ErrorCodes.RollbackNotPossible,
                     "Only completed jobs can be rolled back.", false);
             }
 
-            // Revit 2024 does not expose a direct API to undo a specific transaction group
-            // after Assimilate. The standard approach is to use the Undo command via the
-            // UIApplication. Since we don't have UIApplication here (only Document), we
-            // attempt to open a rollback transaction that triggers the model to revert.
-            // In practice, post-commit rollback in Revit is done via the UI Undo button.
-            // This method marks the job as rolled back; the actual undo must be triggered
-            // from the UI layer that has access to UIApplication.
-            job.Transition(JobStatus.RolledBack);
+            throw new AgentException(ErrorCodes.UndoNotSafe,
+                "The exact Revit transaction for this job cannot be identified safely.", true,
+                "Keep the document unchanged and use the Revit Undo command only after confirming this job is the latest change.");
         }
 
         // --- Operation execution dispatch ---

@@ -38,6 +38,22 @@ namespace AutodeskNativeAgent.Revit2024.Execution.Operations
                 throw new AgentException(ErrorCodes.InvalidArgument, "Family file not found: " + filename, true);
             }
 
+            // Security: only family files, canonicalized, no path traversal tricks.
+            string extension = System.IO.Path.GetExtension(filename);
+            if (!string.Equals(extension, ".rfa", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(extension, ".fam", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new AgentException(ErrorCodes.PathNotAllowed,
+                    "family.load only accepts .rfa or .fam files.", true);
+            }
+
+            string canonical = System.IO.Path.GetFullPath(filename);
+            if (!string.Equals(canonical, filename, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new AgentException(ErrorCodes.PathNotAllowed,
+                    "family.load path must be canonical (no relative segments).", true);
+            }
+
             string symbolName = args["symbolName"].AsString(null);
             if (string.IsNullOrEmpty(symbolName))
             {

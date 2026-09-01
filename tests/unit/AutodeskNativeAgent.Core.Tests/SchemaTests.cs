@@ -178,6 +178,50 @@ namespace AutodeskNativeAgent.Core.Tests
                 "{\"box\":{\"min\":{\"x\":0,\"y\":0},\"max\":{\"x\":1,\"y\":1}},\"viewType\":\"section\"}"))).ToLowerInvariant());
         }
 
+        [Fact]
+        public void Element_move_schema_validates()
+        {
+            JsonValue schema = SchemaCatalog.LoadOperationSchema("element.move");
+            Assert.Empty(CollectValidationErrors(schema, JsonParser.Parse(
+                "{\"target\":{\"uniqueId\":\"abc\"},\"vector\":{\"x\":1000,\"y\":0,\"z\":0}}")));
+            // missing vector -> required
+            Assert.Contains("required", string.Join("; ", CollectValidationErrors(schema, JsonParser.Parse(
+                "{\"target\":{\"uniqueId\":\"abc\"}}"))).ToLowerInvariant());
+        }
+
+        [Fact]
+        public void Parameter_set_many_schema_validates()
+        {
+            JsonValue schema = SchemaCatalog.LoadOperationSchema("parameter.set_many");
+            Assert.Empty(CollectValidationErrors(schema, JsonParser.Parse(
+                "{\"items\":[{\"target\":{\"uniqueId\":\"abc\"},\"parameter\":\"ALL_MODEL_MARK\",\"value\":\"A1\"}]}")));
+            // empty items -> minItems
+            Assert.Contains("fewer than", string.Join("; ", CollectValidationErrors(schema, JsonParser.Parse(
+                "{\"items\":[]}"))).ToLowerInvariant());
+        }
+
+        [Fact]
+        public void Export_pdf_schema_validates()
+        {
+            JsonValue schema = SchemaCatalog.LoadOperationSchema("export.pdf");
+            Assert.Empty(CollectValidationErrors(schema, JsonParser.Parse(
+                "{\"outputDirectory\":\"C:\\\\Exports\",\"views\":[{\"uniqueId\":\"v1\"}],\"quality\":\"DPI300\",\"rasterQuality\":\"medium\"}")));
+            // invalid quality enum
+            Assert.Contains("must be one of", string.Join("; ", CollectValidationErrors(schema, JsonParser.Parse(
+                "{\"outputDirectory\":\"C:\\\\Exports\",\"views\":[{\"uniqueId\":\"v1\"}],\"quality\":\"medium\"}"))).ToLowerInvariant());
+        }
+
+        [Fact]
+        public void Wall_update_schema_validates()
+        {
+            JsonValue schema = SchemaCatalog.LoadOperationSchema("wall.update");
+            Assert.Empty(CollectValidationErrors(schema, JsonParser.Parse(
+                "{\"target\":{\"elementId\":123},\"height\":3600,\"baseOffset\":100}")));
+            // missing target -> required
+            Assert.Contains("required", string.Join("; ", CollectValidationErrors(schema, JsonParser.Parse(
+                "{\"height\":3600}"))).ToLowerInvariant());
+        }
+
         private static List<string> CollectValidationErrors(JsonValue schema, JsonValue args)
         {
             return JsonSchemaValidator.Validate(args, schema);

@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://autodesk-native-agent.local/schemas/operations/export.pdf.schema.json",
+  "title": "export.pdf arguments",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["outputDirectory", "views"],
+  "properties": {
+    "outputDirectory": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Existing directory for PDF output."
+    },
+    "views": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "../element-reference.schema.json" }
+    },
+    "baseName": { "type": "string", "default": "export" },
+    "overwrite": { "type": "boolean", "default": false },
+    "combine": { "type": "boolean", "default": false },
+    "quality": {
+      "enum": ["LOW", "DPI72", "DPI144", "DPI300", "HIGH", "DPI600", "DPI1200", "DPI2400", "DPI3600", "DPI4000"],
+      "default": "DPI300"
+    },
+    "rasterQuality": {
+      "enum": ["low", "medium", "high", "presentation"],
+      "default": "medium"
+    },
+    "orientation": {
+      "enum": ["portrait", "landscape"],
+      "default": "landscape"
+    },
+    "paperSize": {
+      "enum": ["A0", "A1", "A2", "A3", "A4", "LETTER", "TABLOID", "LEGAL", "LEDGER"],
+      "default": "A1"
+    },
+    "color": {
+      "enum": ["color", "grayscale", "black"],
+      "description": "Omit for printer default."
+    }
+  }
+}

@@ -1,7 +1,7 @@
 # PROGRESS — Autodesk Native Agent Runtime
 
-> Status: **E2E PASS (12/12 trong Revit 2024 thật) — READY v1.0.0**.
-> Cập nhật cuối: 2026-08-27. Source code là source of truth; PROGRESS.md phản ánh trạng thái hiện tại.
+> Status: **RELEASE v1.1.0 — E2E PASS trên Revit 2024 thật (probe 7/7 + nhà 2 tầng 18 ops, 26/26 assertions); schema coverage 28/28 ops, 73/73 unit tests, hardening 4 fix (2026-09-01)**.
+> Cập nhật cuối: 2026-09-01. Source code là source of truth; PROGRESS.md phản ánh trạng thái hiện tại.
 
 ## Phase status
 
@@ -15,28 +15,29 @@
 | 6 — Revit Write Operations | **DONE** | wall.create, wall.update, door.insert, window.insert, parameter.set, parameter.set_many, element.delete, element.move, element.rotate, element.rename, room.create, sheet.create, sheet.place_view, view.create_plan, document.save, document.save_as, export.pdf, export.dwg. |
 | 7 — Safety | **DONE** | Preview, plan hash, document fingerprint, confirmation, TransactionGroup, assertions, rollback, failure preprocessor, stale reference detection, path validation, affected-element limit. |
 | 8 — MCP Server | **DONE** | apps/agent-mcp TypeScript, tsc build pass, 12 tools, pipe-client ESM hoàn chỉnh. |
-| 9 — Tests | **DONE (54/54)** | JsonTests, SchemaTests, AgentPlanTests, ValidationTests, ResultTests pass cả Debug & Release. |
+| 9 — Tests | **DONE (73/73)** | JsonTests, SchemaTests (28/28 ops), AgentPlanTests, ValidationTests, ResultTests pass cả Debug & Release. |
 | 10 — Build & Installer | **DONE** | Solution, csprojs, build-all/clean/install/uninstall/verify/package-release/start-mcp scripts (UTF-8 BOM), .addin manifest, release zip tạo OK. |
 | 11 — Documentation | **DONE** | README (nếu có), ARCHITECTURE, SECURITY, COMMANDS, TROUBLESHOOTING, REVIT-2024-DEVELOPMENT, EXTENDING-TO-AUTOCAD, MANUAL-TEST (10 tests), samples/plans (6 files). |
 
-## Kết quả build/test (2026-08-27 - re-verified)
+## Kết quả build/test (2026-09-01 — số liệu verification mới nhất)
 
-- `dotnet build` solution Debug/Release: **0 error, 0 warning** (đã fix xUnit2013 ở AgentPlanTests.cs:47 → Assert.Single).
-- `dotnet test` (net8.0): **54/54 pass** (Debug lẫn Release).
+- `dotnet build` solution Release: **0 error, 0 warning** (gồm 4 fix hardening: token single-use, export.pdf SecurityValidator, family.load path check, dispatcher exception log).
+- `dotnet test` (net8.0): **73/73 pass** (Release).
 - `npm run build` (apps/agent-mcp): **pass**.
-- `.\\scripts\\build-all.ps1 -Configuration Release`: **pass**.
-- `.\\scripts\\package-release.ps1 -Version 1.0.0`: **tạo `artifacts\\AutodeskNativeAgent-1.0.0.zip` OK**.
+- `.\scripts\package-release.ps1 -Version 1.1.0`: **tạo `artifacts\AutodeskNativeAgent-1.1.0.zip` OK** (add-in DLL + manifest, MCP dist, scripts, samples, NuGet Core nupkg).
+- **E2E Tier-1 trên Revit thật (Project1)**: probe 7 ops (column/family/beam/slab/roof/section/elevation) — 7/7 completed, 8/8 assertions pass.
+- **E2E nhà 2 tầng (house-2story.json)**: 10 wall + door + 4 window + slab + roof + section = 18/18 ops completed, 18/18 assertions pass, 0 errors.
 - **Git repo đã init** (2026-08-27) — commit đầu tiên chứa toàn bộ source.
 
 ## Kết quả build/test (2026-08-11 - lần đầu)
 
 - `dotnet build` solution Debug/Release: **0 error, 0 warning** (sau khi sửa ElementId.Value, WorksetId.IntegerValue, XML cref, usings).
-- `dotnet test` (net8.0): **54/54 pass** (Debug lẫn Release).
+- `dotnet test` (net8.0): **73/73 pass** (số liệu verification mới nhất; lần verify đầu 2026-08-11 là 54/54).
 - `npm run build` (apps/agent-mcp): **pass**.
 - `.\scripts\build-all.ps1 -Configuration Release`: **pass**.
 - `.\scripts\package-release.ps1 -Version 1.0.0`: **tạo `artifacts\AutodeskNativeAgent-1.0.0.zip` OK**.
 
-## Các fix quan trọng trong phiên này (từ 54/54 pass đến build 0/0)
+## Các fix quan trọng trong phiên này (từ bộ test đầu tiên đến build 0/0)
 
 1. SchemaCatalog: logical resource name `operations\...` (backslash) thay vì `operations.`.
 2. ExportPdf/ExportDwg: enums Revit 2024 (ACADVersion, ExportPaperFormat, ColorDepthType), overload PDF 3 tham số.

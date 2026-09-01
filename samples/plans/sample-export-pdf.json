@@ -18,7 +18,8 @@
         ],
         "combine": true,
         "overwrite": true,
-        "quality": "medium",
+        "quality": "DPI300",
+        "rasterQuality": "medium",
         "orientation": "landscape",
         "paperSize": "A1"
       }

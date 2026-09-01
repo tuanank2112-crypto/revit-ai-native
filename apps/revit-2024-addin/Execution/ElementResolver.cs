@@ -17,10 +17,18 @@ namespace AutodeskNativeAgent.Revit2024.Execution
         /// <summary>Resolves a single element from a reference JSON.</summary>
         public static Element Resolve(Document document, JsonValue reference, IReadOnlyDictionary<string, JsonValue> results)
         {
+            if (document == null)
+            {
+                throw new AgentException(ErrorCodes.NoActiveDocument, "No active document.", true);
+            }
+
             if (reference == null || !reference.IsObject)
             {
                 throw new AgentException(ErrorCodes.UnresolvedReference, "Element reference must be an object.", true);
             }
+
+            ElementReference metadata = ElementReference.FromJson(reference);
+            ValidateDocumentFingerprint(document, metadata);
 
             string viaResult = reference["viaOperationResult"].AsString(null);
             if (viaResult != null)
@@ -33,7 +41,7 @@ namespace AutodeskNativeAgent.Revit2024.Execution
                     throw new AgentException(ErrorCodes.UnresolvedReference, "Cannot resolve '" + viaResult + "': " + error, true);
                 }
 
-                return ResolveResolvedJson(document, resolved, viaResult);
+                return ValidateResolvedElement(ResolveResolvedJson(document, resolved, viaResult), metadata, viaResult);
             }
 
             string operationResult = reference["operationResult"].AsString(null);
@@ -47,21 +55,15 @@ namespace AutodeskNativeAgent.Revit2024.Execution
                     throw new AgentException(ErrorCodes.UnresolvedReference, "Cannot resolve '" + operationResult + "': " + error, true);
                 }
 
-                return ResolveResolvedJson(document, resolved, operationResult);
+                return ValidateResolvedElement(ResolveResolvedJson(document, resolved, operationResult), metadata, operationResult);
             }
 
             string uniqueId = reference["uniqueId"].AsString(null);
             if (!string.IsNullOrEmpty(uniqueId))
             {
                 Element element = null;
-                try
-                {
-                    element = document.GetElement(uniqueId);
-                }
-                catch
-                {
-                    element = null;
-                }
+                try { element = document.GetElement(uniqueId); }
+                catch { element = null; }
 
                 if (element == null)
                 {
@@ -69,7 +71,7 @@ namespace AutodeskNativeAgent.Revit2024.Execution
                         "No element with uniqueId '" + uniqueId + "' in the current document.", true);
                 }
 
-                return element;
+                return ValidateResolvedElement(element, metadata, uniqueId);
             }
 
             long elementId = reference["elementId"].AsLong(0);
@@ -82,7 +84,7 @@ namespace AutodeskNativeAgent.Revit2024.Execution
                         "No element with Id " + elementId + " in the current document.", true);
                 }
 
-                return element;
+                return ValidateResolvedElement(element, metadata, elementId.ToString());
             }
 
             throw new AgentException(ErrorCodes.UnresolvedReference,
@@ -141,6 +143,86 @@ namespace AutodeskNativeAgent.Revit2024.Execution
 
             throw new AgentException(ErrorCodes.UnresolvedReference,
                 "Resolved reference '" + origin + "' does not identify an element.", true);
+        }
+
+        private static Element ValidateResolvedElement(Element element, ElementReference metadata, string origin)
+        {
+            if (element == null)
+            {
+                throw new AgentException(ErrorCodes.ElementNotFound,
+                    "Reference '" + origin + "' resolved to no element.", true);
+            }
+
+            if (metadata == null)
+            {
+                return element;
+            }
+
+            string actualCategory = element.Category != null ? element.Category.Name : string.Empty;
+            if (!string.IsNullOrEmpty(metadata.Category) &&
+                !string.Equals(metadata.Category, actualCategory, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new AgentException(ErrorCodes.CategoryMismatch,
+                    "Reference '" + origin + "' expected category '" + metadata.Category +
+                    "' but resolved '" + actualCategory + "'.", true,
+                    "Refresh the selection or query and use the returned reference.");
+            }
+
+            string actualName = SafeElementName(element);
+            if (!string.IsNullOrEmpty(metadata.ExpectedName) &&
+                !string.Equals(metadata.ExpectedName, actualName, StringComparison.Ordinal))
+            {
+                throw new AgentException(ErrorCodes.StaleElementReference,
+                    "Reference '" + origin + "' expected element name '" + metadata.ExpectedName +
+                    "' but found '" + actualName + "'.", true,
+                    "Refresh the element snapshot before retrying.");
+            }
+
+            string actualTypeName = GetTypeName(element);
+            if (!string.IsNullOrEmpty(metadata.ExpectedTypeName) &&
+                !string.Equals(metadata.ExpectedTypeName, actualTypeName, StringComparison.Ordinal))
+            {
+                throw new AgentException(ErrorCodes.StaleElementReference,
+                    "Reference '" + origin + "' expected type '" + metadata.ExpectedTypeName +
+                    "' but found '" + actualTypeName + "'.", true,
+                    "Refresh the element snapshot before retrying.");
+            }
+
+            return element;
+        }
+
+        private static void ValidateDocumentFingerprint(Document document, ElementReference metadata)
+        {
+            if (metadata == null || string.IsNullOrEmpty(metadata.DocumentFingerprint))
+            {
+                return;
+            }
+
+            string title = SafeDocumentString(() => document.Title);
+            string path = SafeDocumentString(() => document.PathName);
+            string projectNumber = SafeDocumentString(() => document.ProjectInformation?.Number);
+            string projectName = SafeDocumentString(() => document.ProjectInformation?.Name);
+            string actual = AutodeskNativeAgent.Core.Identity.DocumentFingerprint.FromIdentity(
+                title, path, projectNumber, projectName);
+
+            if (!string.Equals(metadata.DocumentFingerprint, actual, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new AgentException(ErrorCodes.StaleElementReference,
+                    "Element reference belongs to a different document.", true,
+                    "Call selection.get or document.get_info and refresh the reference.");
+            }
+        }
+
+        private static string SafeElementName(Element element)
+        {
+            try { return element.Name ?? string.Empty; }
+            catch { return string.Empty; }
+        }
+
+        private static string SafeDocumentString(Func<string> getter)
+        {
+            try { return getter() ?? string.Empty; }
+            catch { return string.Empty; }
         }
 
         /// <summary>Resolves a wall host from the door.insert "host" object.</summary>

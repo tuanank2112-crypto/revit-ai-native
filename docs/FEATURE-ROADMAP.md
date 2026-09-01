@@ -11,7 +11,8 @@
 ## Tier 0 — Đã có sẵn & chạy OK (20 ops)
 
 > [!NOTE]
-> Đã E2E 12/12 trong Revit thật ở session trước. Op mới (Tier 1) cần E2E lại sau khi install.
+> Tier 0 đã E2E 12/12 trong Revit thật (session 2026-08-27) và Tier 1 đã E2E thật (2026-09-01):
+> probe 7 ops + nhà 2 tầng 18 ops — toàn bộ completed, 26/26 assertions pass, 0 errors.
 
 | Op | Dùng để làm nhà 2 tầng |
 |---|---|
@@ -39,7 +40,7 @@
 | `view.create_elevation` | reuse section op, `ViewFamily.Elevation` | |
 
 **Tổng: 28 ops.** Đã register trong `CommandRegistry`, dispatch trong `PlanExecutor`, build 0/0,
-test 59/59.
+test 73/73, E2E thật trên Revit 2024 (probe 7/7 + nhà 2 tầng 18/18 ops, 0 errors).
 
 ---
 
@@ -107,5 +108,7 @@ Mỗi bước = 1 plan (assertions + `requireUserConfirmation`), TransactionGrou
     `view.create_elevation`, `export.pdf` → đối chiếu bản vẽ gốc 9 trang.
 
 > [!IMPORTANT]
-> **Trước Phase 4 phải install + restart Revit 1 lần** để add-in nạp bản 28 ops (bản đang chạy
-> trong Revit hiện tại vẫn là v1.0.0 cũ). Xem `scripts/install-revit2024.ps1`.
+> **Đã hoàn tất trên Revit thật (2026-09-01)**: add-in 28 ops đã install, workflow nhà 2 tầng
+> chạy qua `artifacts/e2e/house-2story.json` — 18/18 ops completed, 18/18 assertions pass.
+> Probe elements đã cleanup bằng `artifacts/e2e/run-cleanup-probe.mjs`. Runbook: đọc
+> `artifacts/e2e/run-cleanup-probe.mjs` + `run-house-v4.mjs` để tái chạy trên model sạch.

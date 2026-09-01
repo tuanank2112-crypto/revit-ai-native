@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://autodesk-native-agent.local/schemas/operations/window.insert.schema.json",
+  "title": "window.insert arguments",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["host", "location", "type"],
+  "properties": {
+    "host": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "operationResult": {
+          "type": "string",
+          "pattern": "^\\$result\\.[a-zA-Z0-9._-]{1,64}$"
+        },
+        "viaOperationResult": {
+          "type": "string",
+          "pattern": "^\\$result\\.[a-zA-Z0-9._-]{1,64}$"
+        },
+        "uniqueId": { "type": "string" },
+        "elementId": { "type": "integer" }
+      },
+      "anyOf": [
+        { "required": ["operationResult"] },
+        { "required": ["viaOperationResult"] },
+        { "required": ["uniqueId"] },
+        { "required": ["elementId"] }
+      ]
+    },
+    "location": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["strategy"],
+      "properties": {
+        "strategy": {
+          "enum": [
+            "offset_from_wall_start",
+            "offset_from_wall_end",
+            "wall_midpoint",
+            "explicit_point"
+          ]
+        },
+        "offset": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Distance along the wall in plan units."
+        },
+        "point": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["x", "y"],
+          "properties": {
+            "x": { "type": "number" },
+            "y": { "type": "number" },
+            "z": { "type": "number", "default": 0 }
+          }
+        }
+      }
+    },
+    "type": {
+      "$ref": "wall.create.schema.json#/$defs/typeSelector"
+    },
+    "sillHeight": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Sill height above the level in plan units."
+    }
+  }
+}

@@ -53,7 +53,7 @@ const tools = [
   },
   {
     name: 'revit_inspect_selection',
-    description: 'Returns the current Revit selection as element summaries (elementId, uniqueId, category, name, typeName).',
+    description: 'Returns the current Revit selection with documentFingerprint, activeView context, stable fingerprint-bound references, and element summaries (elementId, uniqueId, category, name, typeName).',
     inputSchema: { type: 'object', properties: {} }
   },
   {
@@ -168,6 +168,20 @@ const tools = [
     inputSchema: { type: 'object', required: ['jobId'], properties: { jobId: { type: 'string' } } }
   },
   {
+    name: 'revit_wait_for_job',
+    description: 'Waits for a Revit job to reach a terminal state and returns its final status, result, and latest progress.',
+    inputSchema: {
+      type: 'object',
+      required: ['jobId'],
+      properties: {
+        jobId: { type: 'string' },
+        timeoutMs: { type: 'integer', minimum: 1000, maximum: 900000, default: 120000 },
+        initialPollMs: { type: 'integer', minimum: 50, maximum: 10000, default: 250 },
+        maxPollMs: { type: 'integer', minimum: 50, maximum: 30000, default: 3000 }
+      }
+    }
+  },
+  {
     name: 'revit_rollback_job',
     description: 'Rolls back a completed job when the runtime supports it.',
     inputSchema: { type: 'object', required: ['jobId'], properties: { jobId: { type: 'string' } } }
@@ -252,6 +266,14 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         method = 'job.cancel';
         payload = { jobId: args.jobId };
         break;
+      case 'revit_wait_for_job': {
+        const finalStatus = await client.waitForJob(args.jobId, {
+          timeoutMs: args.timeoutMs,
+          initialPollMs: args.initialPollMs,
+          maxPollMs: args.maxPollMs,
+        });
+        return { content: [{ type: 'text', text: JSON.stringify(finalStatus, null, 2) }] };
+      }
       case 'revit_rollback_job':
         method = 'job.rollback';
         payload = { jobId: args.jobId };

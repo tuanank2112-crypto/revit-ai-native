@@ -9,7 +9,7 @@ namespace AutodeskNativeAgent.Core.Tests
 {
     public class AgentPlanTests
     {
-        private static JsonValue BuildPlanJson()
+        internal static JsonValue BuildPlanJson()
         {
             return JsonParser.Parse(
                 "{" +
@@ -107,6 +107,69 @@ namespace AutodeskNativeAgent.Core.Tests
 
             members[name] = value;
             return JsonValue.Object(members);
+        }
+    }
+
+    public class JobStateMachineTests
+    {
+        private static Execution.Job CreateJob()
+        {
+            AgentError error;
+            AgentPlan plan = AgentPlan.FromJson(AgentPlanTests.BuildPlanJson(), out error);
+            Assert.Null(error);
+            return new Execution.Job("job-1", plan, "hash-1", "test");
+        }
+
+        [Fact]
+        public void TryCancel_atomically_marks_queued_job_cancelled()
+        {
+            Execution.Job job = CreateJob();
+
+            Assert.True(job.TryCancel());
+            Assert.Equal(JobStatus.Cancelled, job.Status);
+            Assert.True(job.CancellationRequested);
+            Assert.False(job.IsCancellable);
+            Assert.False(job.TryCancel());
+        }
+
+        [Fact]
+        public void TryCancel_rejects_terminal_job_without_mutating_state()
+        {
+            Execution.Job job = CreateJob();
+            job.Transition(JobStatus.WaitingForRevit);
+            job.Transition(JobStatus.Validating);
+            job.Transition(JobStatus.Executing);
+            job.Transition(JobStatus.Verifying);
+            job.Transition(JobStatus.Completed);
+
+            Assert.False(job.TryCancel());
+            Assert.Equal(JobStatus.Completed, job.Status);
+            Assert.False(job.CancellationRequested);
+        }
+
+        [Fact]
+        public void Status_snapshot_exposes_cancellation_request()
+        {
+            Execution.Job job = CreateJob();
+
+            Assert.False(job.ToStatusJson()["cancellationRequested"].AsBool());
+            job.TryCancel();
+            Assert.True(job.ToStatusJson()["cancellationRequested"].AsBool());
+            Assert.Equal("cancelled", job.ToStatusJson()["status"].AsString());
+        }
+
+        [Fact]
+        public void Status_snapshot_exposes_progress_update()
+        {
+            Execution.Job job = CreateJob();
+
+            job.UpdateProgress("executing", 2, 3, "Creating Revit elements.");
+            JsonValue progress = job.ToStatusJson()["progress"];
+
+            Assert.Equal("executing", progress["phase"].AsString());
+            Assert.Equal(2, progress["completed"].AsInt());
+            Assert.Equal(3, progress["total"].AsInt());
+            Assert.Equal("Creating Revit elements.", progress["message"].AsString());
         }
     }
 
